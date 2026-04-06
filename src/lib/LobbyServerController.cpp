@@ -7,7 +7,7 @@
 #include "lib/Utils.h"
 #include "lib/Config.h"
 
-LobbyServerController::LobbyServerController(CSteamID lobbyID) :
+LobbyServerController::LobbyServerController(uint64_steamid lobbyID) :
 	m_CallbackLobbyDataUpdate(this, &LobbyServerController::OnLobbyDataUpdate),
 	m_CallbackLobbyChatUpdate(this, &LobbyServerController::OnLobbyChatUpdate),
 	m_CallbackLobbyChatMessage(this, &LobbyServerController::OnLobbyChatMessage)
@@ -17,11 +17,12 @@ LobbyServerController::LobbyServerController(CSteamID lobbyID) :
 
 void LobbyServerController::SendChatMsg(const char* message) {
 	DebugLog("LobbyServerController::SendChatMsg: %s\n", message);
-	SteamMatchmaking()->SendLobbyChatMsg(this->lobbyID, message, strlen(message) + 1);
+	SteamAPI_ISteamMatchmaking_SendLobbyChatMsg(SteamMatchmaking(), this->lobbyID, message, strlen(message) + 1);
+
 }
 
 void LobbyServerController::LeaveLobby() {
-	SteamMatchmaking()->LeaveLobby(this->lobbyID);
+	SteamAPI_ISteamMatchmaking_LeaveLobby(SteamMatchmaking(), this->lobbyID);
 	this->lobbyID = {};
 }
 
@@ -37,11 +38,11 @@ void LobbyServerController::OnLobbyDataUpdate(LobbyDataUpdate_t* pCallback) {
 	}
 
 	if (pCallback->m_ulSteamIDLobby != pCallback->m_ulSteamIDMember && 
-		pCallback->m_ulSteamIDMember != SteamUser()->GetSteamID().ConvertToUint64()) {
+		pCallback->m_ulSteamIDMember != SteamAPI_ISteamUser_GetSteamID(SteamUser())) {
 
 		// user data update
-		auto memberName = SteamMatchmaking()->GetLobbyMemberData(pCallback->m_ulSteamIDLobby, pCallback->m_ulSteamIDMember, Config::LobbyUserNameKey.c_str());
-		auto memberIp = SteamMatchmaking()->GetLobbyMemberData(pCallback->m_ulSteamIDLobby, pCallback->m_ulSteamIDMember, Config::LobbyUserIpKey.c_str());
+		auto memberName = SteamAPI_ISteamMatchmaking_GetLobbyMemberData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, pCallback->m_ulSteamIDMember, Config::LobbyUserNameKey.c_str());
+		auto memberIp = SteamAPI_ISteamMatchmaking_GetLobbyMemberData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, pCallback->m_ulSteamIDMember, Config::LobbyUserIpKey.c_str());
 
         DebugLog("LobbyServerController::OnLobbyDataUpdate username: %s, ip: %s\n", memberName, memberIp);
 		if (this->enterUser != nullptr && memberIp != nullptr) {
@@ -70,7 +71,7 @@ void LobbyServerController::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback) {
 		pCallback->m_ulSteamIDMakingChange,
 		pCallback->m_rgfChatMemberStateChange);
 
-	if (pCallback->m_ulSteamIDUserChanged == SteamUser()->GetSteamID().ConvertToUint64()) return;
+	if (pCallback->m_ulSteamIDUserChanged == SteamAPI_ISteamUser_GetSteamID(SteamUser())) return;
 
 	switch (pCallback->m_rgfChatMemberStateChange) {
 	case k_EChatMemberStateChangeEntered:
@@ -109,25 +110,25 @@ void LobbyServerController::OnLobbyChatMessage(LobbyChatMsg_t* pCallback) {
 	if (pCallback->m_eChatEntryType != k_EChatEntryTypeChatMsg) {
 		return;
 	}
-	CSteamID steamIDUser = CSteamID(pCallback->m_ulSteamIDUser);
-	if (steamIDUser == SteamUser()->GetSteamID()) {
+	if (pCallback->m_ulSteamIDUser == SteamAPI_ISteamUser_GetSteamID(SteamUser())) {
 		return; // Ignore own messages
 	}
+	auto steamIDUser = CSteamID(pCallback->m_ulSteamIDUser);
 	char message[1024];
-	int messageSize = SteamMatchmaking()->GetLobbyChatEntry(pCallback->m_ulSteamIDLobby, pCallback->m_iChatID, &steamIDUser, message, sizeof(message), nullptr);
+	int messageSize = SteamAPI_ISteamMatchmaking_GetLobbyChatEntry(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, pCallback->m_iChatID, &steamIDUser, message, sizeof(message), nullptr);
 	if (messageSize <= 0) {
 		return; // No message or error
 	}
 	message[messageSize] = '\0'; // Null-terminate the string
-	std::string username = SteamFriends()->GetFriendPersonaName(steamIDUser);
+	std::string username = SteamAPI_ISteamFriends_GetFriendPersonaName(SteamFriends(), pCallback->m_ulSteamIDUser);
 	DebugLog("LobbyServerController::OnLobbyChatMessage: Received chat message from %s: %s\n", username.c_str(), message);
 }
 
-void LobbyServerController::KickMember(CSteamID userId) {
+void LobbyServerController::KickMember(uint64_steamid userId) {
 	DebugLog("LobbyServerController::KickMember\n");
 }
 
-void LobbyServerController::BanMember(CSteamID userId) {
+void LobbyServerController::BanMember(uint64_steamid userId) {
 	DebugLog("LobbyServerController::BanMember\n");
 }
 

@@ -2,7 +2,7 @@
 #define LOBBY_CLIENT_CONTROLLER_H
 
 #include <functional>
-#include <steam/steam_api.h>
+#include <steam/steam_api_flat.h>
 
 #include <string>
 
@@ -11,7 +11,7 @@
 
 class LobbyClientController {
 public:
-	LobbyClientController(CSteamID lobbyID);
+	LobbyClientController(uint64_steamid lobbyID);
 	~LobbyClientController();
 
 	void SendChatMsg(const char* message);
@@ -24,7 +24,7 @@ public:
 	void SetIp(uint32_t ip);
 
 private:
-	CSteamID lobbyID = {};
+	uint64_steamid lobbyID = {};
 	CallbackClientEnteredUser enterUser = nullptr;
 	CallbackClientLeftUser leftUser = nullptr;
 

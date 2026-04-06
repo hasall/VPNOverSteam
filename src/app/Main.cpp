@@ -25,7 +25,11 @@ int client_start() {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	steamLoop.Start();
+	auto steamLoopResult = steamLoop.Start();
+	if (!steamLoopResult) {
+		DebugLog("Failed to start SteamLoop\n");
+		return 1;
+	}
 
 	LobbyClient lobbyClient;
 	LobbyClientController* lobbyControllerClient = nullptr;
@@ -137,7 +141,11 @@ int server_start() {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	steamLoop.Start();
+	auto steamLoopResult = steamLoop.Start();
+	if (!steamLoopResult) {
+		DebugLog("Failed to start SteamLoop\n");
+		return 1;
+	}
 
 	LobbyServer lobbyServer;
 	LobbyServerController* lobbyControllerServer = nullptr;

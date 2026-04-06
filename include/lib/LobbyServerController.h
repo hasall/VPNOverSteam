@@ -2,7 +2,7 @@
 #define LOBBY_SERVER_CONTROLLER_H
 
 #include <functional>
-#include <steam/steam_api.h>
+#include <steam/steam_api_flat.h>
 
 #include <string>
 
@@ -12,7 +12,7 @@
 
 class LobbyServerController {
 public:
-	LobbyServerController(CSteamID lobbyID);
+	LobbyServerController(uint64_steamid lobbyID);
 
 	~LobbyServerController() {
 		this->LeaveLobby();
@@ -20,15 +20,15 @@ public:
 	void SendChatMsg(const char* message);
 	void LeaveLobby();
 
-	void KickMember(CSteamID userId);
-	void BanMember(CSteamID userId);
+	void KickMember(uint64_steamid userId);
+	void BanMember(uint64_steamid userId);
 
 	void SetNewUserCallbacks(
 		CallbackServerEnteredUser enterUser,
 		CallbackServerLeftUser leftUser);
 
 private:
-	CSteamID lobbyID = {};
+	uint64_steamid lobbyID = {};
 	CallbackServerEnteredUser enterUser = nullptr;
 	CallbackServerLeftUser leftUser = nullptr;
 

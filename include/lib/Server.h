@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include <steam/steam_api.h>
+#include <steam/steam_api_flat.h>
 
 #include "TUN.h"
 #ifdef _TUN_MOCK_ENABLED

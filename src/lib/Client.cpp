@@ -64,7 +64,7 @@ void Client::LeftMember(uint64 userId) {
 	if (it == this->ipToClient.end()) {
 		DebugLog("Client::LeftMember: userId %llu not found in map\n", userId);
 	} else {
-		SteamNetworkingMessages()->CloseSessionWithUser(it->second);
+		SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser(SteamNetworkingMessages(), it->second);
 		this->ipToClient.erase(it);
 	}
 }

@@ -3,7 +3,7 @@
 
 void SteamMessageProcessor::OnConnectionRequested(SteamNetworkingMessagesSessionRequest_t* request) {
     DebugLog("AcceptSession\n");
-    SteamNetworkingMessages()->AcceptSessionWithUser(request->m_identityRemote);
+    SteamAPI_ISteamNetworkingMessages_AcceptSessionWithUser(SteamNetworkingMessages(), request->m_identityRemote);
 }
 void SteamMessageProcessor::OnConnectionFailed(SteamNetworkingMessagesSessionFailed_t* request) {
     DebugLog("FailSession\n");
@@ -52,7 +52,8 @@ void SteamMessageProcessor::SendSystemMessage(SteamNetworkingIdentity userId, co
 void SteamMessageProcessor::SendData(SteamNetworkingIdentity userId, const char* data, size_t size, int channel) {
     DebugLog("SteamMessageProcessor::SendData\n");
     DebugLogArr(data, size);
-    EResult res = SteamNetworkingMessages()->SendMessageToUser(
+    EResult res = SteamAPI_ISteamNetworkingMessages_SendMessageToUser(
+        SteamNetworkingMessages(),
         userId,
         data,
         (uint32)size,
@@ -70,7 +71,7 @@ void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData cal
     while (this->running) {
         SteamNetworkingMessage_t* messages[10];
 
-        int num = SteamNetworkingMessages()->ReceiveMessagesOnChannel(channel, messages, 10);
+        int num = SteamAPI_ISteamNetworkingMessages_ReceiveMessagesOnChannel(SteamNetworkingMessages(), channel, messages, 10);
 
         for (int i = 0; i < num; ++i) {
             SteamNetworkingMessage_t* msg = messages[i];

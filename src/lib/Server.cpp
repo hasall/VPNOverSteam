@@ -48,7 +48,7 @@ void Server::LeftMember(uint64 userId) {
 			DebugLog("Server::LeftMember: userId %llu not found in map\n", userId);
 		} 
 		else {
-			SteamNetworkingMessages()->CloseSessionWithUser(it->second);
+			SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser(SteamNetworkingMessages(), it->second);
 			this->ipPool.Release(it->first);
 			this->ipToClient.erase(it);
 		}

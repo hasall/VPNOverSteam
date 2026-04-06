@@ -11,8 +11,13 @@ LobbyClient::LobbyClient():
 void LobbyClient::RequestLobbyList(CallbackRequestLobbyList callback) {
 	DebugLog("LobbyClient::RequestLobbyList\n");
 	this->callbackRequestLobbyList = callback;
-	SteamMatchmaking()->AddRequestLobbyListStringFilter(Config::LobbyGameNameKey.c_str(), Config::LobbyGameNameValue.c_str(), ELobbyComparison::k_ELobbyComparisonEqual);
-	SteamMatchmaking()->RequestLobbyList();
+	SteamAPI_ISteamMatchmaking_AddRequestLobbyListStringFilter(
+		SteamMatchmaking(), 
+		Config::LobbyGameNameKey.c_str(), 
+		Config::LobbyGameNameValue.c_str(), 
+		ELobbyComparison::k_ELobbyComparisonEqual
+	);
+	SteamAPI_ISteamMatchmaking_RequestLobbyList(SteamMatchmaking());
 }
 
 LobbyClient::~LobbyClient() {}
@@ -31,27 +36,27 @@ void LobbyClient::OnLobbyMatchList(LobbyMatchList_t* pCallback) {
 	LobbyList* lobbies = new LobbyList[pCallback->m_nLobbiesMatching];
 
 	for (size_t i = 0; i < pCallback->m_nLobbiesMatching; i++) {
-		CSteamID lobbyID = SteamMatchmaking()->GetLobbyByIndex((int)i);
+		uint64_steamid lobbyID = SteamAPI_ISteamMatchmaking_GetLobbyByIndex(SteamMatchmaking(), (int)i);
 		lobbies[i].lobbyID = lobbyID;
 
-        auto nameData = SteamMatchmaking()->GetLobbyData(lobbyID, Config::LobbyNameKey.c_str());
+        auto nameData = SteamAPI_ISteamMatchmaking_GetLobbyData(SteamMatchmaking(), lobbyID, Config::LobbyNameKey.c_str());
 		if (nameData != nullptr) {
 			std::snprintf(lobbies[i].name, sizeof(lobbies[i].name), "%s", nameData);
 		} else {
 			std::snprintf(lobbies[i].name, sizeof(lobbies[i].name), "%s", Config::UnreadableName.c_str());
 		}
 
-		auto password = SteamMatchmaking()->GetLobbyData(lobbyID, Config::LobbyPasswordKey.c_str());
+		auto password = SteamAPI_ISteamMatchmaking_GetLobbyData(SteamMatchmaking(), lobbyID, Config::LobbyPasswordKey.c_str());
 		if (password != nullptr) {
 			std::snprintf(lobbies[i].password, sizeof(lobbies[i].password), "%s", password);
 		} else {
 			std::snprintf(lobbies[i].password, sizeof(lobbies[i].password), "%s", Config::UnreadableName.c_str());
 		}
 
-		lobbies[i].memberCount = SteamMatchmaking()->GetNumLobbyMembers(lobbyID);
-		lobbies[i].maxPlayers = SteamMatchmaking()->GetLobbyMemberLimit(lobbyID);
+		lobbies[i].memberCount = SteamAPI_ISteamMatchmaking_GetNumLobbyMembers(SteamMatchmaking(), lobbyID);
+		lobbies[i].maxPlayers = SteamAPI_ISteamMatchmaking_GetLobbyMemberLimit(SteamMatchmaking(), lobbyID);
         DebugLog("LobbyClient::OnLobbyMatchList %llu: %s, %u, %u, %s\n", 
-			lobbies[i].lobbyID.ConvertToUint64(), 
+			lobbies[i].lobbyID, 
 			lobbies[i].name, 
 			(unsigned)lobbies[i].memberCount, 
 			(unsigned)lobbies[i].maxPlayers,
@@ -64,20 +69,20 @@ void LobbyClient::OnLobbyMatchList(LobbyMatchList_t* pCallback) {
 }
 
 void LobbyClient::JoinLobby(
-	CSteamID lobbyID,
+	uint64_steamid lobbyID,
 	std::string password,
 	CallbackJoinLobby callback
 ) {
 
-	auto lobbyName = SteamMatchmaking()->GetLobbyData(lobbyID, Config::LobbyNameKey.c_str());
+	auto lobbyName = SteamAPI_ISteamMatchmaking_GetLobbyData(SteamMatchmaking(), lobbyID, Config::LobbyNameKey.c_str());
 	std::string localLobbyPassword = std::string(lobbyName) + ":" + password;
 
 	this->password = Utils::SHA512(localLobbyPassword);
 	this->callbackJoinLobby = callback;
 
-	auto lobbyPassword = SteamMatchmaking()->GetLobbyData(lobbyID, Config::LobbyPasswordKey.c_str());
+	auto lobbyPassword = SteamAPI_ISteamMatchmaking_GetLobbyData(SteamMatchmaking(), lobbyID, Config::LobbyPasswordKey.c_str());
 	if (this->password.compare(lobbyPassword) == 0) {
-		SteamMatchmaking()->JoinLobby(lobbyID);
+		SteamAPI_ISteamMatchmaking_JoinLobby(SteamMatchmaking(), lobbyID);
 	}
 	else {
 		DebugLog("LobbyClient::JoinLobby Incorrect password\n");
@@ -95,7 +100,11 @@ void LobbyClient::OnLobbyEnter(LobbyEnter_t* pCallback) {
 		return;
 	}
 
-	SteamMatchmaking()->SetLobbyMemberData(pCallback->m_ulSteamIDLobby, Config::LobbyUserNameKey.c_str(), SteamFriends()->GetPersonaName());
+	SteamAPI_ISteamMatchmaking_SetLobbyMemberData(
+		SteamMatchmaking(), 
+		pCallback->m_ulSteamIDLobby, 
+		Config::LobbyUserNameKey.c_str(), 
+		SteamAPI_ISteamFriends_GetPersonaName(SteamFriends()));
 
 	if (this->callbackJoinLobby != NULL) {
 		this->callbackJoinLobby(pCallback->m_EChatRoomEnterResponse, new LobbyClientController(pCallback->m_ulSteamIDLobby));

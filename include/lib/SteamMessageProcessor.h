@@ -4,7 +4,7 @@
 #include <functional>
 #include <thread>
 #include <string>
-#include <steam/steam_api.h>
+#include <steam/steam_api_flat.h>
 
 #define MessageChannel 0
 #define SystemMessageChannel 1

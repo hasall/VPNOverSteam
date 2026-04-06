@@ -2,7 +2,7 @@
 #define LOBBY_CLIENT_H
 
 #include <functional>
-#include <steam/steam_api.h>
+#include <steam/steam_api_flat.h>
 
 #include "LobbyClientController.h"
 #include "Constants.h"
@@ -11,7 +11,7 @@
 #define CallbackRequestLobbyList std::function<void(uint32_t result, LobbyList* lobby, int lobbyListSize)>
 
 struct LobbyList {
-    CSteamID lobbyID = {};
+    uint64_steamid lobbyID = {};
     int memberCount = 0;
     int maxPlayers = 0;
     char name[96] = "";
@@ -26,7 +26,7 @@ public:
     void RequestLobbyList(CallbackRequestLobbyList callback);
 
     void JoinLobby(
-        CSteamID lobbyID,
+        uint64_steamid lobbyID,
         std::string passwprd,
         CallbackJoinLobby callback
     );

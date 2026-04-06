@@ -16,7 +16,7 @@ void LobbyServer::CreateLobby(
 	this->callbackCreateLobby = callback;
 	this->lobbyName = name;
 	this->password = Utils::SHA512(name + ":" + password);
-    SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, 32);
+	SteamAPI_ISteamMatchmaking_CreateLobby(SteamMatchmaking(), k_ELobbyTypePublic, 32);
 }
 
 void LobbyServer::OnLobbyCreated(LobbyCreated_t* pCallback) {
@@ -41,12 +41,12 @@ void LobbyServer::OnLobbyEnter(LobbyEnter_t* pCallback) {
 		return;
 	}
 
-	SteamMatchmaking()->SetLobbyData(pCallback->m_ulSteamIDLobby, Config::LobbyGameNameKey.c_str(), Config::LobbyGameNameValue.c_str());
-	SteamMatchmaking()->SetLobbyData(pCallback->m_ulSteamIDLobby, Config::LobbyNameKey.c_str(), this->lobbyName.c_str());
-	SteamMatchmaking()->SetLobbyData(pCallback->m_ulSteamIDLobby, Config::LobbyPasswordKey.c_str(), this->password.c_str());
+	SteamAPI_ISteamMatchmaking_SetLobbyData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, Config::LobbyGameNameKey.c_str(), Config::LobbyGameNameValue.c_str());
+	SteamAPI_ISteamMatchmaking_SetLobbyData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, Config::LobbyNameKey.c_str(), this->lobbyName.c_str());
+	SteamAPI_ISteamMatchmaking_SetLobbyData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, Config::LobbyPasswordKey.c_str(), this->password.c_str());
 
-	SteamMatchmaking()->SetLobbyMemberData(pCallback->m_ulSteamIDLobby, Config::LobbyUserNameKey.c_str(), SteamFriends()->GetPersonaName());
-	SteamMatchmaking()->SetLobbyMemberData(pCallback->m_ulSteamIDLobby, Config::LobbyUserIpKey.c_str(), Config::ServerIp.c_str());
+	SteamAPI_ISteamMatchmaking_SetLobbyMemberData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, Config::LobbyUserNameKey.c_str(), SteamAPI_ISteamFriends_GetPersonaName(SteamFriends()));
+	SteamAPI_ISteamMatchmaking_SetLobbyMemberData(SteamMatchmaking(), pCallback->m_ulSteamIDLobby, Config::LobbyUserIpKey.c_str(), Config::ServerIp.c_str());
 
 	if (this->callbackCreateLobby != NULL) {
 		this->callbackCreateLobby(pCallback->m_EChatRoomEnterResponse, new LobbyServerController(pCallback->m_ulSteamIDLobby));
