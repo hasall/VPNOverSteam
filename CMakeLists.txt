@@ -37,6 +37,13 @@ target_link_libraries(VPNOverSteamApp PRIVATE VPNOverSteamLib)
 set(STEAM_ROOT ${CMAKE_SOURCE_DIR}/third_party/steam)
 include_directories(${STEAM_ROOT}/include)
 
+# Copy Steam app id file to output directory so runtime finds it
+add_custom_command(TARGET VPNOverSteamApp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${STEAM_ROOT}/steam_appid.txt
+        $<TARGET_FILE_DIR:VPNOverSteamApp>
+)
+
 # Platform-specific settings
 if(WIN32)
     message(STATUS "Building for Windows")
@@ -67,7 +74,7 @@ if(WIN32)
     include_directories(${WINTUN_ROOT}/include)
     
     # Copy Wintun DLL to output directory so runtime finds it
-        add_custom_command(TARGET VPNOverSteamApp POST_BUILD
+    add_custom_command(TARGET VPNOverSteamApp POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${WINTUN_ROOT}/bin/win64/wintun.dll
             $<TARGET_FILE_DIR:VPNOverSteamApp>

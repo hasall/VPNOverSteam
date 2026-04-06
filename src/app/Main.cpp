@@ -235,19 +235,27 @@ int server_start() {
 
 int main()
 {
-	Config::Init();
-	
-	char type;
-	std::cout << "Enter type ((c)lient | (s)erver | (q)uit): ";
-	std::cin >> type;
-	std::cin.clear();
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	try {
+		Config::Init();
+		
+		char type;
+		std::cout << "Enter type ((c)lient | (s)erver | (q)uit): ";
+		std::cin >> type;
+		std::cin.clear();
+		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-	if (type == 'c') {
-		client_start();
+		if (type == 'c') {
+			client_start();
+		}
+		if (type == 's') {
+			server_start();
+		}
 	}
-	if (type == 's') {
-		server_start();
+	catch (std::exception &e) {
+		DebugLog("Main thread exception: %s\n", e.what());
+	}
+	catch (...) {
+		DebugLog("Main thread unknown exception\n");
 	}
 
 	system("pause");

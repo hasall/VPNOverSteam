@@ -27,9 +27,15 @@ void SteamLoop::Stop() {
 
 bool SteamLoop::Start() {
 	bool result = SteamAPI_IsSteamRunning();
-	if (!result) DebugLog("[Steam] Failed to initialize SteamAPI\n");
+	if (!result) {
+		DebugLog("SteamAPI_IsSteamRunning failed\n");
+		return false;
+	}
 	result = SteamAPI_Init();
-	if (!result) DebugLog("[Steam] Failed to initialize SteamAPI\n");
+	if (!result) {
+		DebugLog("SteamAPI_Init failed\n");
+		return false;
+	}
 	if (!this->running) {
 		this->runThread = std::thread(&SteamLoop::RunLoop, this);
 	}
