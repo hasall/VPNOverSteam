@@ -1,3 +1,5 @@
+#ifndef _WIN32
+
 #include <iostream>
 #include <cstring>
 #include <fcntl.h>
@@ -77,3 +79,5 @@ void TUNLinux::Cleanup() {
         this->tunFd = -1;
     }
 }
+
+#endif
