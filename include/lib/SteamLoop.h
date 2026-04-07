@@ -9,13 +9,18 @@ class SteamLoop {
 public:
 	SteamLoop();
 	~SteamLoop();
+
 	bool Start();
+	bool StartServer();
+
 	void Stop();
+
 private:
 	bool running;
 	std::thread runThread;
 
 	void RunLoop();
+	void RunServerLoop();
 };
 
 #endif // STEAM_LOOP_H

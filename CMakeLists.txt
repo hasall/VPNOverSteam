@@ -90,6 +90,12 @@ elseif(UNIX)
     # Link Steam API
     target_link_libraries(VPNOverSteamLib PRIVATE "${STEAM_ROOT}/lib/linux64/libsteam_api.so")
     target_link_libraries(VPNOverSteamApp PRIVATE "${STEAM_ROOT}/lib/linux64/libsteam_api.so")
+    
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/lib/linux64/steamclient.so
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
 
     # Find and link OpenSSL
     find_package(OpenSSL REQUIRED)

@@ -21,7 +21,7 @@
 #include "lib/Utils.h"
 
 int client_start() {
-	char input;
+	std::string input;
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
@@ -52,12 +52,10 @@ int client_start() {
 	std::cout << "l - Leave room" << std::endl;
 
 	while (true) {
-		std::cout << "Enter commands: ";
-		std::cin >> input;
-		std::cin.clear();
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		std::cout << "Enter commands: \n";
+		std::getline(std::cin, input);
 
-		switch (input) {
+		switch (input[0]) {
 
 		case 'q': {
 			std::cout << "Quitting..." << std::endl;
@@ -83,12 +81,11 @@ int client_start() {
 			std::cout << "Joining to room..." << std::endl;
 
 			std::cout << "Enter room number: ";
-			int n;
-			std::cin >> n;
-			std::cin.clear();
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			std::string n_str;
+			std::getline(std::cin, n_str);
+			int n = std::stoi(n_str);
 
-			if (n >= lobbiesSize) {
+			if (n < 0 || n >= lobbiesSize) {
 				DebugLog("Join error\n");
 				break;
 			}
@@ -137,11 +134,11 @@ int client_start() {
 }
 
 int server_start() {
-	char input;
+	std::string input;
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	auto steamLoopResult = steamLoop.Start();
+	auto steamLoopResult = steamLoop.StartServer();
 	if (!steamLoopResult) {
 		DebugLog("Failed to start SteamLoop\n");
 		return 1;
@@ -162,13 +159,23 @@ int server_start() {
 	std::cout << "w - Write message" << std::endl;
 	std::cout << "l - Leave room" << std::endl;
 
+	std::cin.clear();
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	if (!std::cin) {
+		DebugLog("Failed to clear cin\n");
+		return 1;
+	}
 	while (true) {
-		std::cout << "Enter commands: ";
-		std::cin >> input;
-		std::cin.clear();
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		std::cout << "Enter commands: \n";
+		std::cout << "state: fail=" << std::cin.fail()
+          << " eof=" << std::cin.eof()
+          << " bad=" << std::cin.bad() << std::endl;
+		std::getline(std::cin, input);
+		std::cout << "state: fail=" << std::cin.fail()
+          << " eof=" << std::cin.eof()
+          << " bad=" << std::cin.bad() << std::endl;
 
-		switch (input) {
+		switch (input[0]) {
 
 		case 'q': {
 			std::cout << "Quitting..." << std::endl;
@@ -209,9 +216,8 @@ int server_start() {
 			std::cout << "Member Id: ";
 
 			uint64 userId;
-			std::cin >> userId;
-			std::cin.clear();
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			std::getline(std::cin, input);
+			userId = std::stoull(input);
 
 			CSteamID id(userId);
 
@@ -246,16 +252,15 @@ int main()
 	try {
 		Config::Init();
 		
-		char type;
+		std::string type;
 		std::cout << "Enter type ((c)lient | (s)erver | (q)uit): ";
-		std::cin >> type;
-		std::cin.clear();
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		std::getline(std::cin, type);
 
-		if (type == 'c') {
+
+		if (type[0] == 'c') {
 			client_start();
 		}
-		if (type == 's') {
+		if (type[0] == 's') {
 			server_start();
 		}
 	}
