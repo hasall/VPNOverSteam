@@ -67,7 +67,11 @@ void LobbyClientController::GetLobbyMembers() {
 }
 
 void LobbyClientController::OnLobbyDataUpdate(LobbyDataUpdate_t* pCallback) {
-	DebugLog("LobbyClientController::OnLobbyDataUpdate: lobby: %llu, userId: %llu, success: %lu\n", pCallback->m_ulSteamIDLobby, pCallback->m_ulSteamIDMember, (uint32)pCallback->m_bSuccess);
+	DebugLog(
+		"LobbyClientController::OnLobbyDataUpdate: lobby: %llu, userId: %llu, success: %u\n",
+		pCallback->m_ulSteamIDLobby,
+		pCallback->m_ulSteamIDMember,
+		(uint32)pCallback->m_bSuccess);
 	if (!pCallback->m_bSuccess) {
 		return;
 	}
@@ -99,7 +103,7 @@ void LobbyClientController::OnLobbyDataUpdate(LobbyDataUpdate_t* pCallback) {
 }
 
 void LobbyClientController::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback) {
-	DebugLog("LobbyClientController::OnLobbyChatUpdate Lobby chat updated: lobby: %llu, userChanged: %llu, makingChange: %llu, stateChange: %lu\n",
+	DebugLog("LobbyClientController::OnLobbyChatUpdate Lobby chat updated: lobby: %llu, userChanged: %llu, makingChange: %llu, stateChange: %u\n",
 		pCallback->m_ulSteamIDLobby,
 		pCallback->m_ulSteamIDUserChanged,
 		pCallback->m_ulSteamIDMakingChange,
@@ -137,7 +141,7 @@ void LobbyClientController::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback) {
 			}
 			break;
 		default:
-			DebugLog("LobbyClientController::OnLobbyChatUpdate Unknown chat member state change: %lu\n", pCallback->m_rgfChatMemberStateChange);
+			DebugLog("LobbyClientController::OnLobbyChatUpdate Unknown chat member state change: %u\n", pCallback->m_rgfChatMemberStateChange);
 		}
 	}
 	catch (const std::exception& ex) {
