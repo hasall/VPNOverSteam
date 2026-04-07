@@ -249,6 +249,11 @@ int server_start() {
 
 int main()
 {
+#ifndef _WIN32 // set path to steamclient.so library for linux
+	system("export LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH");
+	system("export STEAM_CLIENT_PATH=./");
+#endif
+		
 	try {
 		Config::Init();
 		
