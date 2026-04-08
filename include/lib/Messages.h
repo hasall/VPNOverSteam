@@ -2,6 +2,7 @@
 #define MESSAGES_H
 
 #include <cstdint>
+#include <steam/steam_api_flat.h>
 
 #pragma pack(1)
 struct ip_header {
@@ -22,6 +23,7 @@ struct ip_header {
 struct system_password_message {
 	uint8_t type = 1;
 	uint8_t password[SHA512_SIZE]; // SHA-2 512 hash
+	uint8_t version;
 };
 
 #pragma pack(1)
@@ -36,6 +38,13 @@ struct system_error_message {
 	uint32_t errorCode;
 };
 
+#pragma pack(1)
+struct system_new_member_message {
+	uint8_t type = 4;
+	uint64 userId;
+	uint32_t ip;
+};
+
 #define ERROR_CODE_WRONG_PASSWORD 1
 
 class MessageCreator {
@@ -43,6 +52,7 @@ public:
 	static system_password_message getpasswordMessage(uint8_t* password) {
 		system_password_message message = { 1 };
 		memcpy(message.password, password, SHA512_SIZE);
+		message.version = APP_VERSION;
 		return message;
 	}
 
@@ -53,6 +63,11 @@ public:
 
 	static system_error_message getErrorMessage(uint32_t errorCode) {
 		system_error_message message = { 3, errorCode };
+		return message;
+	}
+
+	static system_new_member_message getNewMemberMessage(uint64 userId, uint32_t ip) {
+		system_new_member_message message = { 4, userId, ip };
 		return message;
 	}
 };

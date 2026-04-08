@@ -9,7 +9,7 @@
 SteamLoop::SteamLoop() : running(false) {
 }
 SteamLoop::~SteamLoop() {
-	Stop();
+	this->StopServer();
 }
 void SteamLoop::RunLoop() {
 	this->running = true;
@@ -27,30 +27,30 @@ void SteamLoop::RunServerLoop() {
 	}
 }
 
-bool SteamLoop::Start() {
-	bool result = SteamAPI_IsSteamRunning();
-	if (!result) {
-		DebugLog("SteamAPI_IsSteamRunning failed\n");
-		return false;
-	}
-	result = SteamAPI_Init();
-	if (!result) {
-		DebugLog("SteamAPI_Init failed\n");
-		return false;
-	}
-	if (!this->running) {
-		this->runThread = std::thread(&SteamLoop::RunLoop, this);
-	}
-	return result;
-}
+// bool SteamLoop::Start() {
+// 	bool result = SteamAPI_IsSteamRunning();
+// 	if (!result) {
+// 		DebugLog("SteamAPI_IsSteamRunning failed\n");
+// 		return false;
+// 	}
+// 	result = SteamAPI_Init();
+// 	if (!result) {
+// 		DebugLog("SteamAPI_Init failed\n");
+// 		return false;
+// 	}
+// 	if (!this->running) {
+// 		this->runThread = std::thread(&SteamLoop::RunLoop, this);
+// 	}
+// 	return result;
+// }
 
-void SteamLoop::Stop() {
-	this->running = false;
-	if (this->runThread.joinable()) {
-		this->runThread.join();
-	}
-	SteamAPI_Shutdown();
-}
+// void SteamLoop::Stop() {
+// 	this->running = false;
+// 	if (this->runThread.joinable()) {
+// 		this->runThread.join();
+// 	}
+// 	SteamAPI_Shutdown();
+// }
 
 bool SteamLoop::StartServer() {
 	bool result = SteamGameServer_Init(
@@ -74,10 +74,11 @@ bool SteamLoop::StartServer() {
 }
 
 
-void SteamLoop::StopServer() {
+bool SteamLoop::StopServer() {
 	this->running = false;
 	if (this->runThread.joinable()) {
 		this->runThread.join();
 	}
 	SteamGameServer_Shutdown();
+	return true;
 }

@@ -19,7 +19,6 @@
 #endif // _TUN_MOCK_ENABLED
 
 #include "IpPool.h"
-#include "LobbyServerController.h"
 #include "SteamMessageProcessor.h"
 
 class Server {
@@ -30,9 +29,6 @@ public:
 	Server();
 #endif
 	~Server();
-
-	void JoinMember(uint64 userId, const char* userName, uint32_t ip);
-	void LeftMember(uint64 userId);
 
 	void Start(std::string password);
 	void Stop();
@@ -53,12 +49,16 @@ private:
 #endif // _WIN32
 #endif // _TUN_MOCK_ENABLED
 
+	void JoinMember(uint64 userId, uint32_t ip);
+	void LeftMember(uint64 userId);
+
 	void TUNDataReceiver(const char* message, size_t size);
 	void SteamMessageReceiver(CSteamID userId, const char* message, size_t size);
 	void SteamSystemMessageReceiver(CSteamID userId, const char* message, size_t size);
 
 	void SendHandshakeMassage(SteamNetworkingIdentity user, uint32_t ip);
 	void SendErrorMassage(SteamNetworkingIdentity user, uint32_t errorCode);
+	void SendNotifyOfNewMemberMessage(SteamNetworkingIdentity user, uint64 userID, uint32_t ip);
 };
 
 #endif // SERVER_H

@@ -9,9 +9,6 @@ class SteamLoop {
 public:
 	SteamLoop();
 	~SteamLoop();
-
-	bool Start();
-	void Stop();
 	
 	bool StartServer();
 	bool StopServer();

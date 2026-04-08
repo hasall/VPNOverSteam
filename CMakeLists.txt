@@ -12,10 +12,6 @@ add_library(VPNOverSteamLib SHARED
     src/lib/Client.cpp
     src/lib/DebugLog.cpp
     src/lib/IpPool.cpp
-    src/lib/LobbyClient.cpp
-    src/lib/LobbyClientController.cpp
-    src/lib/LobbyServer.cpp
-    src/lib/LobbyServerController.cpp
     src/lib/Server.cpp
     src/lib/SteamLoop.cpp
     src/lib/SteamMessageProcessor.cpp

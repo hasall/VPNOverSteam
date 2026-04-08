@@ -34,18 +34,6 @@ bool IsRunningAsAdmin() {
 
 int main(int argc, char* argv[])
 {
-    // #ifndef _WIN32
-    // std::system("echo main");
-    // std::system("echo $(pwd)");
-    // std::system("echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH");
-    // std::system("echo STEAM_CLIENT_PATH: $STEAM_CLIENT_PATH");
-    // std::system("export LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH");
-    // std::system("export STEAM_CLIENT_PATH=./");
-    // std::system("echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH");
-    // std::system("echo STEAM_CLIENT_PATH: $STEAM_CLIENT_PATH");
-    // std::system("echo end main");
-    // #endif
-
 	if (!IsRunningAsAdmin()) {
 		std::cerr << "This application must be run with administrator privileges." << std::endl;
 		return EXIT_FAILURE;
