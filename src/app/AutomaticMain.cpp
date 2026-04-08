@@ -244,7 +244,8 @@ int AutomaticMain(int argc, char* argv[])
 		DebugLog("Main thread unknown exception\n");
 	}
 
-	system("pause");
+	std::cout << "Press Enter to continue..." << std::endl;
+    std::cin.get(); // Waits for a single Enter key press
 
 	return 0;
 }

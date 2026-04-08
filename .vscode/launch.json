@@ -60,8 +60,17 @@
                 "-lp", "MyPassword"
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
+            "cwd": "${workspaceFolder}/build",
+            "environment": [
+                {
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "./:$LD_LIBRARY_PATH"
+                },
+                {
+                    "name": "STEAM_CLIENT_PATH",
+                    "value": "./"
+                }
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
@@ -83,8 +92,17 @@
                 "-lp", "MyPassword"
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
+            "cwd": "${workspaceFolder}/build",
+            "environment": [
+                {
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "./:$LD_LIBRARY_PATH"
+                },
+                {
+                    "name": "STEAM_CLIENT_PATH",
+                    "value": "./"
+                }
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
