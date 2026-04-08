@@ -161,6 +161,8 @@ CLARGS parse_args(int argc, char* argv[]) {
         exit(1);
     }
 
+	DebugLog("Parsed arguments: appType: %c, lobbyId: %llu, lobbyPassword: %s, sha512: %s\n", args.appType, args.lobbyId, args.lobbyPassword.c_str(), Utils::SHA512(args.lobbyPassword).c_str());
+	
     return args;
 }
 
