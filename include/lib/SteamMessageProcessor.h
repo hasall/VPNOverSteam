@@ -43,8 +43,8 @@ private:
 	void SendData(SteamNetworkingIdentity userId, const char* data, size_t size, int channel);
 	void ReceiveDataLoop(int channel, CallbackReceiveData callback);
 
-	STEAM_CALLBACK(SteamMessageProcessor, OnConnectionRequested, SteamNetworkingMessagesSessionRequest_t);
-	STEAM_CALLBACK(SteamMessageProcessor, OnConnectionFailed, SteamNetworkingMessagesSessionFailed_t);
+	STEAM_GAMESERVER_CALLBACK(SteamMessageProcessor, OnConnectionRequested, SteamNetworkingMessagesSessionRequest_t);
+	STEAM_GAMESERVER_CALLBACK(SteamMessageProcessor, OnConnectionFailed, SteamNetworkingMessagesSessionFailed_t);
 };
 
 #endif // STEAM_MESSAGE_PROCESSOR_H

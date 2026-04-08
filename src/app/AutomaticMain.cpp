@@ -30,8 +30,22 @@ int client_start(CLARGS args) {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	if (!steamLoop.StartServer()) {
+	if (!steamLoop.StartServer([&mtxReady, &cv]() {
+		DebugLog("SteamLoop started\n");
+
+		uint64_steamid steamId = SteamAPI_ISteamGameServer_GetSteamID(SteamAPI_SteamGameServer());
+		DebugLog("LogOnAnonymous: %llu\n", steamId);
+
+		mtxReady = true;
+		cv.notify_one();
+	})) {
 		std::cerr << "Failed to start SteamLoop\n";
+		return 1;
+	}
+
+    mtxReady = false;
+	if (!cv.wait_for(lock, std::chrono::seconds(10), [&mtxReady] { return mtxReady; })) {
+		std::cerr << "Failed to get lobby list\n";
 		return 1;
 	}
 
@@ -50,7 +64,7 @@ int client_start(CLARGS args) {
     client.Start(args.lobbyId, args.lobbyPassword);
 
     mtxReady = false;
-	if (cv.wait_for(lock, std::chrono::seconds(10), [&mtxReady] { return mtxReady; })) {
+	if (!cv.wait_for(lock, std::chrono::seconds(10), [&mtxReady] { return mtxReady; })) {
 		std::cerr << "Failed to get lobby list\n";
 		return 1;
 	}
@@ -60,8 +74,8 @@ int client_start(CLARGS args) {
 
     std::cout << "Quitting..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(10)); // wait for steam messages processing
-	client.Stop();
 	steamLoop.StopServer();
+	client.Stop();
 
     return 0;
 }
@@ -75,11 +89,26 @@ int server_start(CLARGS args) {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	if (!steamLoop.StartServer()) {
-		DebugLog("Failed to start SteamLoop\n");
+	if (!steamLoop.StartServer([&mtxReady, &cv]() {
+		DebugLog("SteamLoop started\n");
+
+		uint64_steamid steamId = SteamAPI_ISteamGameServer_GetSteamID(SteamAPI_SteamGameServer());
+		DebugLog("LogOnAnonymous: %llu\n", steamId);
+
+		mtxReady = true;
+		cv.notify_one();
+	})) {
+		std::cerr << "Failed to start SteamLoop\n";
 		return 1;
 	}
 
+    mtxReady = false;
+	if (!cv.wait_for(lock, std::chrono::seconds(10), [&mtxReady] { return mtxReady; })) {
+		std::cerr << "Failed to Initializing\n";
+		return 1;
+	}
+
+	std::cout << "Starting server..." << std::endl;
 	#ifdef _WIN32
 	Server server(Config::AdapterGuid);
 	#else
@@ -94,9 +123,8 @@ int server_start(CLARGS args) {
 
     std::cout << "Quitting..." << std::endl;
 
-    std::this_thread::sleep_for(std::chrono::seconds(10)); // wait for steam messages processing
-	server.Stop();
 	steamLoop.StopServer();
+	server.Stop();
 
     return 0;
 }

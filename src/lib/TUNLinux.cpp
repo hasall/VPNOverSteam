@@ -12,7 +12,7 @@
 #include "lib/DebugLog.h"
 
 TUNLinux::TUNLinux(TUNMessageReceiver receiver) : receiver(receiver) {
-	DebugLog("TUNMock selected\n");
+	DebugLog("TUNLinux selected\n");
     this->tunFd = this->Initialize();
 }
 
