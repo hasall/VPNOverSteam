@@ -201,6 +201,7 @@ void Client::SteamSystemMessageReceiver(CSteamID userId, const char* message, si
 }
 
 void Client::SendPasswordMassage(SteamNetworkingIdentity user) {
+	DebugLog("Client::SendPasswordMassage: sending password message to %llu\n", user.GetSteamID().ConvertToUint64());
     try {
 		system_password_message message = MessageCreator::getpasswordMessage((uint8_t*)this->password.c_str());
 		Utils::PrintBytes((char*)&message, sizeof(message));
@@ -215,6 +216,7 @@ void Client::SendPasswordMassage(SteamNetworkingIdentity user) {
 }
 
 void Client::SendErrorMassage(SteamNetworkingIdentity user, uint32_t errorCode) {
+	DebugLog("Client::SendErrorMassage: sending error message to %llu, errorCode: %u\n", user.GetSteamID().ConvertToUint64(), errorCode);
     try {
 		system_error_message message = MessageCreator::getErrorMessage(errorCode);
 		Utils::PrintBytes((char*)&message, sizeof(message));

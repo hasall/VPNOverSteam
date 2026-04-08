@@ -45,7 +45,7 @@ int client_start(CLARGS args) {
 
     mtxReady = false;
 	if (!cv.wait_for(lock, std::chrono::seconds(10), [&mtxReady] { return mtxReady; })) {
-		std::cerr << "Failed to get lobby list\n";
+		std::cerr << "Failed to Initializing\n";
 		return 1;
 	}
 
@@ -65,7 +65,7 @@ int client_start(CLARGS args) {
 
     mtxReady = false;
 	if (!cv.wait_for(lock, std::chrono::seconds(10), [&mtxReady] { return mtxReady; })) {
-		std::cerr << "Failed to get lobby list\n";
+		std::cerr << "Failed to client start\n";
 		return 1;
 	}
 

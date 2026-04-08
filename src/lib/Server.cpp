@@ -198,6 +198,7 @@ void Server::SteamSystemMessageReceiver(CSteamID userId, const char* message, si
 }
 
 void Server::SendHandshakeMassage(SteamNetworkingIdentity user, uint32_t ip) {
+	DebugLog("Server::SendHandshakeMassage: sending handshake message to %llu, ip: %u, %s\n", user.GetSteamID().ConvertToUint64(), ip, Utils::ToString(ip).c_str());
 	try {
 		system_handshake_message message = MessageCreator::getHandshakeMessage(ip);
 		Utils::PrintBytes((char*)&message, sizeof(message));
@@ -212,6 +213,7 @@ void Server::SendHandshakeMassage(SteamNetworkingIdentity user, uint32_t ip) {
 }
 
 void Server::SendErrorMassage(SteamNetworkingIdentity user, uint32_t errorCode) {
+	DebugLog("Server::SendErrorMassage: sending error message to %llu, errorCode: %u\n", user.GetSteamID().ConvertToUint64(), errorCode);
 	try {
 		system_error_message message = MessageCreator::getErrorMessage(errorCode);
 		Utils::PrintBytes((char*)&message, sizeof(message));
@@ -226,6 +228,7 @@ void Server::SendErrorMassage(SteamNetworkingIdentity user, uint32_t errorCode) 
 }
 
 void Server::SendNotifyOfNewMemberMessage(SteamNetworkingIdentity user, uint64 userID, uint32_t ip) {
+	DebugLog("Server::SendNotifyOfNewMemberMessage: sending new member message to %llu, userId: %llu, ip: %u, %s\n", user.GetSteamID().ConvertToUint64(), userID, ip, Utils::ToString(ip).c_str());
 	try {
 		system_new_member_message message = MessageCreator::getNewMemberMessage(userID, ip);
 		Utils::PrintBytes((char*)&message, sizeof(message));
