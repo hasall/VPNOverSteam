@@ -48,6 +48,52 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+                {
+            "name": "Launch VPNOverSteamApp Linux as server",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/VPNOverSteamApp",
+            "args": [
+                "-s",
+                "-ln", "MyLobby",
+                "-lp", "MyPassword"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+                {
+            "name": "Launch VPNOverSteamApp Linux as client",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/VPNOverSteamApp",
+            "args": [
+                "-c",
+                "-ln", "MyLobby",
+                "-lp", "MyPassword"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }
