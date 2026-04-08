@@ -193,7 +193,7 @@ CLARGS parse_args(int argc, char* argv[]) {
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
-        if (arg == "--server" || arg == "-r") {
+        if (arg == "--server" || arg == "-s") {
             args.appType = 's';
         } 
         if (arg == "--client" || arg == "-c") {
