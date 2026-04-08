@@ -28,7 +28,10 @@ add_library(VPNOverSteamLib SHARED
 target_compile_definitions(VPNOverSteamLib PRIVATE VPN_OVER_STEAM_EXPORTS)
 
 # Create executable
-add_executable(VPNOverSteamApp src/app/Main.cpp)
+add_executable(VPNOverSteamApp 
+    src/app/AutomaticMain.cpp
+    src/app/ManualMain.cpp
+    src/app/Main.cpp)
 
 # Link library
 target_link_libraries(VPNOverSteamApp PRIVATE VPNOverSteamLib)
