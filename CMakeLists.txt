@@ -53,6 +53,10 @@ if(WIN32)
     # Link Windows networking / crypto libs used by project
     target_link_libraries(VPNOverSteamLib PRIVATE ws2_32 iphlpapi bcrypt)
 
+    # Find and link OpenSSL
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(VPNOverSteamLib PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+
     # App also uses Steam API symbols directly (via steam callbacks in main path)
     target_link_libraries(VPNOverSteamApp PRIVATE "${STEAM_ROOT}/lib/win64/steam_api64.lib")
 
