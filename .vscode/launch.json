@@ -8,8 +8,8 @@
             "program": "${workspaceFolder}/build/VPNOverSteamApp.exe",
             "args": [
                 "-s",
-                "-ln",
-                "MyLobby",
+                "-li",
+                "0",
                 "-lp",
                 "MyPassword"
             ],
@@ -34,8 +34,8 @@
             "program": "${workspaceFolder}/build/VPNOverSteamApp.exe",
             "args": [
                 "-c",
-                "-ln",
-                "MyLobby",
+                "-li",
+                "0",
                 "-lp",
                 "MyPassword"
             ],
