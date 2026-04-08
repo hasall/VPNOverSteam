@@ -11,9 +11,10 @@ public:
 	~SteamLoop();
 
 	bool Start();
-	bool StartServer();
-
 	void Stop();
+	
+	bool StartServer();
+	bool StopServer();
 
 private:
 	bool running;

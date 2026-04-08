@@ -15,7 +15,9 @@ SteamMessageProcessor::SteamMessageProcessor(
 ): 
     messageReceiver(messageReceiver),
     systemMessageReceiver(systemMessageReceiver)
-{}
+{
+    DebugLog("SteamMessageProcessor::SteamMessageProcessor\n");
+}
 
 SteamMessageProcessor::~SteamMessageProcessor() {
     this->Stop();

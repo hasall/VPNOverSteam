@@ -27,14 +27,6 @@ void SteamLoop::RunServerLoop() {
 	}
 }
 
-void SteamLoop::Stop() {
-	this->running = false;
-	if (this->runThread.joinable()) {
-		this->runThread.join();
-	}
-	SteamAPI_Shutdown();
-}
-
 bool SteamLoop::Start() {
 	bool result = SteamAPI_IsSteamRunning();
 	if (!result) {
@@ -50,6 +42,14 @@ bool SteamLoop::Start() {
 		this->runThread = std::thread(&SteamLoop::RunLoop, this);
 	}
 	return result;
+}
+
+void SteamLoop::Stop() {
+	this->running = false;
+	if (this->runThread.joinable()) {
+		this->runThread.join();
+	}
+	SteamAPI_Shutdown();
 }
 
 bool SteamLoop::StartServer() {
@@ -71,4 +71,13 @@ bool SteamLoop::StartServer() {
 		this->runThread = std::thread(&SteamLoop::RunServerLoop, this);
 	}
 	return result;
+}
+
+
+void SteamLoop::StopServer() {
+	this->running = false;
+	if (this->runThread.joinable()) {
+		this->runThread.join();
+	}
+	SteamGameServer_Shutdown();
 }

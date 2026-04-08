@@ -135,7 +135,7 @@ int server_start(CLARGS args) {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	auto steamLoopResult = steamLoop.StartServer();
+	auto steamLoopResult = steamLoop.Start();
 	if (!steamLoopResult) {
 		DebugLog("Failed to start SteamLoop\n");
 		return 1;
@@ -181,6 +181,7 @@ int server_start(CLARGS args) {
 
     std::cout << "Quitting..." << std::endl;
     lobbyControllerServer->LeaveLobby();
+
     std::this_thread::sleep_for(std::chrono::seconds(10)); // wait for steam messages processing
 	steamLoop.Stop();
 	server.Stop();

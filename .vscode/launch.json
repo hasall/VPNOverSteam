@@ -8,8 +8,10 @@
             "program": "${workspaceFolder}/build/VPNOverSteamApp.exe",
             "args": [
                 "-s",
-                "-ln", "MyLobby",
-                "-lp", "MyPassword"
+                "-ln",
+                "MyLobby",
+                "-lp",
+                "MyPassword"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
@@ -32,8 +34,10 @@
             "program": "${workspaceFolder}/build/VPNOverSteamApp.exe",
             "args": [
                 "-c",
-                "-ln", "MyLobby",
-                "-lp", "MyPassword"
+                "-ln",
+                "MyLobby",
+                "-lp",
+                "MyPassword"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
@@ -49,67 +53,22 @@
                 }
             ]
         },
-                {
-            "name": "Launch VPNOverSteamApp Linux as server",
+        {
+            "name": "Attach to gdbserver",
             "type": "cppdbg",
             "request": "launch",
+            "miDebuggerServerAddress": "localhost:1234",
+            "miDebuggerPath": "/usr/bin/gdb",
             "program": "${workspaceFolder}/build/VPNOverSteamApp",
-            "args": [
-                "-s",
-                "-ln", "MyLobby",
-                "-lp", "MyPassword"
-            ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [
                 {
                     "name": "LD_LIBRARY_PATH",
-                    "value": "./:$LD_LIBRARY_PATH"
+                    "value": "${workspaceFolder}/"
                 },
                 {
                     "name": "STEAM_CLIENT_PATH",
-                    "value": "./"
-                }
-            ],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-                {
-            "name": "Launch VPNOverSteamApp Linux as client",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/VPNOverSteamApp",
-            "args": [
-                "-c",
-                "-ln", "MyLobby",
-                "-lp", "MyPassword"
-            ],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build",
-            "environment": [
-                {
-                    "name": "LD_LIBRARY_PATH",
-                    "value": "./:$LD_LIBRARY_PATH"
-                },
-                {
-                    "name": "STEAM_CLIENT_PATH",
-                    "value": "./"
-                }
-            ],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
+                    "value": "${workspaceFolder}/"
                 }
             ]
         }

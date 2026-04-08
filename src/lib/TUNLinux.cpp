@@ -9,8 +9,10 @@
 #include <linux/if_tun.h>
 
 #include "lib/TUNLinux.h"
+#include "lib/DebugLog.h"
 
 TUNLinux::TUNLinux(TUNMessageReceiver receiver) : receiver(receiver) {
+	DebugLog("TUNMock selected\n");
     this->tunFd = this->Initialize();
 }
 
