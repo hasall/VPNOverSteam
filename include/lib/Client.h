@@ -23,7 +23,6 @@
 #endif // _TUN_MOCK_ENABLED
 
 #include "IpPool.h"
-#include "LobbyServerController.h"
 #include "SteamMessageProcessor.h"
 
 #define ReceiveNewIpCallback std::function<void(uint32_t ip)>
@@ -37,10 +36,7 @@ public:
 #endif
 	~Client();
 
-	void JoinMember(uint64 userId, const char* userName, uint32_t ip);
-	void LeftMember(uint64 userId);
-
-	void Start(std::string password);
+	void Start(uint64 serverUserId, std::string password);
 	void Stop();
 
 private:
@@ -65,6 +61,9 @@ private:
 #endif // _TUN_MOCK_ENABLED
 
 	ReceiveNewIpCallback callback;
+
+	void JoinMember(uint64 userId, uint32_t ip);
+	void LeftMember(uint64 userId);
 
 	void TUNDataReceiver(const char* message, size_t size);
 	void SteamMessageReceiver(CSteamID userId, const char* message, size_t size);

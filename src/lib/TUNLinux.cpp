@@ -10,13 +10,16 @@
 
 #include "lib/TUNLinux.h"
 #include "lib/DebugLog.h"
+#include "lib/Utils.h"
+#include "lib/Config.h"
 
 TUNLinux::TUNLinux(TUNMessageReceiver receiver) : receiver(receiver) {
-	DebugLog("TUNMock selected\n");
-    this->tunFd = this->Initialize();
+	DebugLog("TUNLinux selected\n");
+    this->tunFd = this->InitializeTun();
 }
 
 void TUNLinux::Start(uint32_t ip) {
+    this->SetupTun(ip);
     if (!this->running) {
         this->receiverThread = std::thread(&TUNLinux::Receiver, this);
     }
@@ -59,12 +62,18 @@ void TUNLinux::Receiver() {
     }
 }
 
-int TUNLinux::Initialize() {
+int TUNLinux::InitializeTun() {
     struct ifreq ifr;
     int fd = open("/dev/net/tun", O_RDWR);
+    if (fd < 0) {
+        perror("open");
+        return -1;
+    }
 
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
+
+    strncpy(ifr.ifr_name, Config::InterfaceName.c_str(), IFNAMSIZ - 1);
 
     if (ioctl(fd, TUNSETIFF, (void*)&ifr) < 0) {
         perror("ioctl");
@@ -72,7 +81,29 @@ int TUNLinux::Initialize() {
         return -1;
     }
 
+    DebugLog("TUN interface created\n");
+    DebugLogArr(ifr.ifr_name, IFNAMSIZ);
+
     return fd;
+}
+
+void TUNLinux::SetupTun(uint32_t ip) {
+    // This function should set up the TUN interface with the given IP address.
+    // The implementation can vary based on the system and requirements.
+    // For example, you might use system calls or execute shell commands to configure the interface.
+    // This is a placeholder for the actual implementation.
+
+    // sudo ip addr add 10.0.0.1/24 dev tun0
+    // sudo ip link set tun0 up
+    // sudo sysctl -w net.ipv4.ip_forward=1
+
+    std::string command = "ip addr add " + Utils::ToString(ip) + "/24 dev " + Config::InterfaceName;
+    system(command.c_str());
+
+    command = "ip link set dev " + Config::InterfaceName + " up";
+    system(command.c_str());
+
+    DebugLog("TUN interface configured with IP %s\n", Utils::ToString(ip).c_str());
 }
 
 void TUNLinux::Cleanup() {

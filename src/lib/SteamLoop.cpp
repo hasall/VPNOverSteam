@@ -6,10 +6,26 @@
 #include "lib/SteamLoop.h"
 #include "lib/DebugLog.h"
 
+void SteamLoop::OnSteamServersConnectFailure(SteamServerConnectFailure_t* pParam) {
+	DebugLog("OnSteamServersConnectFailure: %d\n", pParam->m_eResult);
+}
+
+void SteamLoop::OnSteamServersConnected(SteamServersConnected_t* pParam) {
+	DebugLog("OnSteamServersConnected\n");
+	if (this->callback) {
+		this->callback();
+	}
+}
+
+void SteamLoop::OnSteamServersDisconnected(SteamServersDisconnected_t* pParam) {
+	DebugLog("OnSteamServersDisconnected\n");
+}
+
 SteamLoop::SteamLoop() : running(false) {
 }
+
 SteamLoop::~SteamLoop() {
-	Stop();
+	this->StopServer();
 }
 void SteamLoop::RunLoop() {
 	this->running = true;
@@ -27,32 +43,9 @@ void SteamLoop::RunServerLoop() {
 	}
 }
 
-bool SteamLoop::Start() {
-	bool result = SteamAPI_IsSteamRunning();
-	if (!result) {
-		DebugLog("SteamAPI_IsSteamRunning failed\n");
-		return false;
-	}
-	result = SteamAPI_Init();
-	if (!result) {
-		DebugLog("SteamAPI_Init failed\n");
-		return false;
-	}
-	if (!this->running) {
-		this->runThread = std::thread(&SteamLoop::RunLoop, this);
-	}
-	return result;
-}
+bool SteamLoop::StartServer(CallbackSteamConnected callback) {
+	this->callback = callback;
 
-void SteamLoop::Stop() {
-	this->running = false;
-	if (this->runThread.joinable()) {
-		this->runThread.join();
-	}
-	SteamAPI_Shutdown();
-}
-
-bool SteamLoop::StartServer() {
 	bool result = SteamGameServer_Init(
         0,
         27015,
@@ -65,7 +58,6 @@ bool SteamLoop::StartServer() {
 	}
 
     SteamGameServer()->LogOnAnonymous();
-	DebugLog("LogOnAnonymous\n");
 
 	if (!this->running) {
 		this->runThread = std::thread(&SteamLoop::RunServerLoop, this);
@@ -74,10 +66,11 @@ bool SteamLoop::StartServer() {
 }
 
 
-void SteamLoop::StopServer() {
+bool SteamLoop::StopServer() {
 	this->running = false;
 	if (this->runThread.joinable()) {
 		this->runThread.join();
 	}
 	SteamGameServer_Shutdown();
+	return true;
 }

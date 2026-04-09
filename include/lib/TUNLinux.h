@@ -22,7 +22,8 @@ private:
     void Receiver();
 
     int tunFd;
-    int Initialize();
+    int InitializeTun();
+    void SetupTun(uint32_t ip);
     void Cleanup();
 };
 

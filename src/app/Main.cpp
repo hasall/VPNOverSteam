@@ -32,24 +32,17 @@ bool IsRunningAsAdmin() {
 #endif
 }
 
+void TUNTest();
 int main(int argc, char* argv[])
 {
-    // #ifndef _WIN32
-    // std::system("echo main");
-    // std::system("echo $(pwd)");
-    // std::system("echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH");
-    // std::system("echo STEAM_CLIENT_PATH: $STEAM_CLIENT_PATH");
-    // std::system("export LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH");
-    // std::system("export STEAM_CLIENT_PATH=./");
-    // std::system("echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH");
-    // std::system("echo STEAM_CLIENT_PATH: $STEAM_CLIENT_PATH");
-    // std::system("echo end main");
-    // #endif
-
 	if (!IsRunningAsAdmin()) {
 		std::cerr << "This application must be run with administrator privileges." << std::endl;
 		return EXIT_FAILURE;
 	}
+
+    // TUNTest();
+    // return 0;
+    
 	// If command-line arguments are provided, run in automatic mode; otherwise, run in manual mode
 	if (argc > 1) {
 		return AutomaticMain(argc, argv);
@@ -57,3 +50,19 @@ int main(int argc, char* argv[])
 
 	return ManualMain();
 }
+
+// #include "lib/TUNLinux.h"
+// #include "lib/Config.h"
+// #include "lib/Utils.h"
+
+// void TUNTest() {
+//     TUNLinux tun([](const char* message, size_t size) {
+//         std::cout << "Received message: " << std::string(message, size) << std::endl;
+//     });
+
+//     tun.Start(Utils::FromString(Config::ServerIp));
+
+
+// 	std::cout << "Press Enter to continue..." << std::endl;
+//     std::cin.get(); // Waits for a single Enter key press
+// }

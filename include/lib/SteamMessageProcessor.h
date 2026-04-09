@@ -9,6 +9,7 @@
 #define MessageChannel 0
 #define SystemMessageChannel 1
 #define CallbackReceiveData std::function<void(CSteamID userId, const char* message, size_t size)>
+#define CallbackConnectionClosed std::function<void(uint64 userId)>
 
 // Prevent collision with Windows API SendMessage macro (expands to SendMessageW/A)
 #ifdef SendMessage
@@ -19,7 +20,8 @@ class SteamMessageProcessor {
 public:
 	SteamMessageProcessor(
 		CallbackReceiveData messageReceiver,
-		CallbackReceiveData systemMessageReceiver
+		CallbackReceiveData systemMessageReceiver,
+		CallbackConnectionClosed connectionClosedCallback
 	);
 	~SteamMessageProcessor();
 
@@ -32,6 +34,7 @@ public:
 private:
 	CallbackReceiveData messageReceiver;
 	CallbackReceiveData systemMessageReceiver;
+	CallbackConnectionClosed connectionClosedCallback;
 
 	bool running = false;
 	std::thread runMessageThread = {};
@@ -40,8 +43,8 @@ private:
 	void SendData(SteamNetworkingIdentity userId, const char* data, size_t size, int channel);
 	void ReceiveDataLoop(int channel, CallbackReceiveData callback);
 
-	STEAM_CALLBACK(SteamMessageProcessor, OnConnectionRequested, SteamNetworkingMessagesSessionRequest_t);
-	STEAM_CALLBACK(SteamMessageProcessor, OnConnectionFailed, SteamNetworkingMessagesSessionFailed_t);
+	STEAM_GAMESERVER_CALLBACK(SteamMessageProcessor, OnConnectionRequested, SteamNetworkingMessagesSessionRequest_t);
+	STEAM_GAMESERVER_CALLBACK(SteamMessageProcessor, OnConnectionFailed, SteamNetworkingMessagesSessionFailed_t);
 };
 
 #endif // STEAM_MESSAGE_PROCESSOR_H

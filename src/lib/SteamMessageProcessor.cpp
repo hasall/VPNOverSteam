@@ -3,18 +3,23 @@
 
 void SteamMessageProcessor::OnConnectionRequested(SteamNetworkingMessagesSessionRequest_t* request) {
     DebugLog("AcceptSession\n");
-    SteamAPI_ISteamNetworkingMessages_AcceptSessionWithUser(SteamNetworkingMessages(), request->m_identityRemote);
+    SteamAPI_ISteamNetworkingMessages_AcceptSessionWithUser(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), request->m_identityRemote);
 }
 void SteamMessageProcessor::OnConnectionFailed(SteamNetworkingMessagesSessionFailed_t* request) {
     DebugLog("FailSession\n");
+    if (this->connectionClosedCallback) {
+        this->connectionClosedCallback(request->m_info.m_identityRemote.GetSteamID().ConvertToUint64());
+    }
 }
 
 SteamMessageProcessor::SteamMessageProcessor(
     CallbackReceiveData messageReceiver,
-    CallbackReceiveData systemMessageReceiver
+    CallbackReceiveData systemMessageReceiver,
+	CallbackConnectionClosed connectionClosedCallback
 ): 
     messageReceiver(messageReceiver),
-    systemMessageReceiver(systemMessageReceiver)
+    systemMessageReceiver(systemMessageReceiver),
+    connectionClosedCallback(connectionClosedCallback)
 {
     DebugLog("SteamMessageProcessor::SteamMessageProcessor\n");
 }
@@ -55,7 +60,7 @@ void SteamMessageProcessor::SendData(SteamNetworkingIdentity userId, const char*
     DebugLog("SteamMessageProcessor::SendData\n");
     DebugLogArr(data, size);
     EResult res = SteamAPI_ISteamNetworkingMessages_SendMessageToUser(
-        SteamNetworkingMessages(),
+        SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(),
         userId,
         data,
         (uint32)size,
@@ -73,7 +78,7 @@ void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData cal
     while (this->running) {
         SteamNetworkingMessage_t* messages[10];
 
-        int num = SteamAPI_ISteamNetworkingMessages_ReceiveMessagesOnChannel(SteamNetworkingMessages(), channel, messages, 10);
+        int num = SteamAPI_ISteamNetworkingMessages_ReceiveMessagesOnChannel(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), channel, messages, 10);
 
         for (int i = 0; i < num; ++i) {
             SteamNetworkingMessage_t* msg = messages[i];
@@ -89,7 +94,9 @@ void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData cal
                     DebugLog("SteamMessageProcessor::ReceiveDataLoop: empty message from %llu\n", msg->m_identityPeer.GetSteamID().ConvertToUint64());
                 } else {
                     DebugLogArr(((uint8_t*)msg->m_pData), msg->m_cbSize);
-                    callback(msg->m_identityPeer.GetSteamID(), (char*)msg->m_pData, msg->m_cbSize);
+                    if (callback) {
+                        callback(msg->m_identityPeer.GetSteamID(), (char*)msg->m_pData, msg->m_cbSize);
+                    }
                 }
             }
             catch (const std::exception& ex) {

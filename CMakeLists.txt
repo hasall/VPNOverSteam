@@ -12,10 +12,6 @@ add_library(VPNOverSteamLib SHARED
     src/lib/Client.cpp
     src/lib/DebugLog.cpp
     src/lib/IpPool.cpp
-    src/lib/LobbyClient.cpp
-    src/lib/LobbyClientController.cpp
-    src/lib/LobbyServer.cpp
-    src/lib/LobbyServerController.cpp
     src/lib/Server.cpp
     src/lib/SteamLoop.cpp
     src/lib/SteamMessageProcessor.cpp
@@ -56,6 +52,10 @@ if(WIN32)
 
     # Link Windows networking / crypto libs used by project
     target_link_libraries(VPNOverSteamLib PRIVATE ws2_32 iphlpapi bcrypt)
+
+    # Find and link OpenSSL
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(VPNOverSteamLib PRIVATE OpenSSL::SSL OpenSSL::Crypto)
 
     # App also uses Steam API symbols directly (via steam callbacks in main path)
     target_link_libraries(VPNOverSteamApp PRIVATE "${STEAM_ROOT}/lib/win64/steam_api64.lib")
