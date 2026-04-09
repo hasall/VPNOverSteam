@@ -32,12 +32,17 @@ bool IsRunningAsAdmin() {
 #endif
 }
 
+void TUNTest();
 int main(int argc, char* argv[])
 {
 	if (!IsRunningAsAdmin()) {
 		std::cerr << "This application must be run with administrator privileges." << std::endl;
 		return EXIT_FAILURE;
 	}
+
+    // TUNTest();
+    // return 0;
+    
 	// If command-line arguments are provided, run in automatic mode; otherwise, run in manual mode
 	if (argc > 1) {
 		return AutomaticMain(argc, argv);
@@ -45,3 +50,19 @@ int main(int argc, char* argv[])
 
 	return ManualMain();
 }
+
+// #include "lib/TUNLinux.h"
+// #include "lib/Config.h"
+// #include "lib/Utils.h"
+
+// void TUNTest() {
+//     TUNLinux tun([](const char* message, size_t size) {
+//         std::cout << "Received message: " << std::string(message, size) << std::endl;
+//     });
+
+//     tun.Start(Utils::FromString(Config::ServerIp));
+
+
+// 	std::cout << "Press Enter to continue..." << std::endl;
+//     std::cin.get(); // Waits for a single Enter key press
+// }

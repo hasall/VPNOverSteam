@@ -94,7 +94,9 @@ void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData cal
                     DebugLog("SteamMessageProcessor::ReceiveDataLoop: empty message from %llu\n", msg->m_identityPeer.GetSteamID().ConvertToUint64());
                 } else {
                     DebugLogArr(((uint8_t*)msg->m_pData), msg->m_cbSize);
-                    callback(msg->m_identityPeer.GetSteamID(), (char*)msg->m_pData, msg->m_cbSize);
+                    if (callback) {
+                        callback(msg->m_identityPeer.GetSteamID(), (char*)msg->m_pData, msg->m_cbSize);
+                    }
                 }
             }
             catch (const std::exception& ex) {

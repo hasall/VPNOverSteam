@@ -31,6 +31,7 @@ public:
 	inline static std::string LobbyUserNameKey = "UserName";
 	inline static std::string LobbyUserIpKey = "UserIP";
 	inline static std::string UnreadableName = "(null)";
+	inline static std::string InterfaceName = "tunOverSteam";
 
 	static void Init() {
 		std::random_device rd;
