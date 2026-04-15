@@ -8,31 +8,21 @@
 #include "lib/Utils.h"
 #include "lib/Config.h"
 
-#ifdef _WIN32
-Client::Client(ReceiveNewIpCallback callback, GUID guid) :
-#else
 Client::Client(ReceiveNewIpCallback callback) :
-#endif
 	callback(callback),
 	password(),
 	tunMessageProcessor(
 		std::bind(&Client::TUNDataReceiver, this, std::placeholders::_1, std::placeholders::_2)
-		#ifdef _WIN32
-		, guid
-		#endif
 	),
 	steamMessageProcessor(
 		std::bind(&Client::SteamMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-		std::bind(&Client::SteamSystemMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-		std::bind(&Client::LeftMember, this, std::placeholders::_1)
+		std::bind(&Client::SteamSystemMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 	),
 	mtx(),
 	cv(),
 	lock(mtx),
 	mtx_ready(false)
-{
-
-}
+{}
 
 Client::~Client() {
 	this->Stop();

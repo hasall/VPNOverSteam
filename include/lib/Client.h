@@ -11,17 +11,6 @@
 #include <steam/steam_api_flat.h>
 
 #include "TUN.h"
-
-#ifdef _TUN_MOCK_ENABLED
-#include "TUNMock.h"
-#else
-#ifdef _WIN32
-#include "TUNWindows.h"
-#else
-#include "TUNLinux.h"
-#endif // _WIN32
-#endif // _TUN_MOCK_ENABLED
-
 #include "IpPool.h"
 #include "SteamMessageProcessor.h"
 
@@ -29,11 +18,7 @@
 
 class Client {
 public:
-#ifdef _WIN32
-	Client(ReceiveNewIpCallback callback, GUID guid);
-#else
 	Client(ReceiveNewIpCallback callback);
-#endif
 	~Client();
 
 	void Start(uint64 serverUserId, std::string password);
@@ -50,15 +35,7 @@ private:
 	std::unique_lock<std::mutex> lock;
 	bool mtx_ready = false;
 
-#ifdef _TUN_MOCK_ENABLED
-	TUN<TUNMock> tunMessageProcessor;
-#else
-#ifdef _WIN32
-	TUN<TUNWindows> tunMessageProcessor;
-#else
-	TUN<TUNLinux> tunMessageProcessor;
-#endif // _WIN32
-#endif // _TUN_MOCK_ENABLED
+	TUN tunMessageProcessor;
 
 	ReceiveNewIpCallback callback;
 

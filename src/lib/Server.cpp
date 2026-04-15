@@ -9,24 +9,15 @@
 #include "lib/Utils.h"
 #include "lib/Config.h"
 
-#ifdef _WIN32
-Server::Server(GUID guid) :
-#else
 Server::Server() :
-#endif
-
 	password(),
 	ipPool(Config::IpPoolFrom, Config::IpPoolTo),
 	tunMessageProcessor(
 		std::bind(&Server::TUNDataReceiver, this, std::placeholders::_1, std::placeholders::_2)
-		#ifdef _WIN32
-		, guid
-		#endif
 	),
 	steamMessageProcessor(
 		std::bind(&Server::SteamMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-		std::bind(&Server::SteamSystemMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
-		std::bind(&Server::LeftMember, this, std::placeholders::_1)
+		std::bind(&Server::SteamSystemMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 	)
 {}
 

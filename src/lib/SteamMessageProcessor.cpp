@@ -7,19 +7,14 @@ void SteamMessageProcessor::OnConnectionRequested(SteamNetworkingMessagesSession
 }
 void SteamMessageProcessor::OnConnectionFailed(SteamNetworkingMessagesSessionFailed_t* request) {
     DebugLog("FailSession\n");
-    if (this->connectionClosedCallback) {
-        this->connectionClosedCallback(request->m_info.m_identityRemote.GetSteamID().ConvertToUint64());
-    }
 }
 
 SteamMessageProcessor::SteamMessageProcessor(
     CallbackReceiveData messageReceiver,
-    CallbackReceiveData systemMessageReceiver,
-	CallbackConnectionClosed connectionClosedCallback
+    CallbackReceiveData systemMessageReceiver
 ): 
     messageReceiver(messageReceiver),
-    systemMessageReceiver(systemMessageReceiver),
-    connectionClosedCallback(connectionClosedCallback)
+    systemMessageReceiver(systemMessageReceiver)
 {
     DebugLog("SteamMessageProcessor::SteamMessageProcessor\n");
 }

@@ -20,8 +20,7 @@ class SteamMessageProcessor {
 public:
 	SteamMessageProcessor(
 		CallbackReceiveData messageReceiver,
-		CallbackReceiveData systemMessageReceiver,
-		CallbackConnectionClosed connectionClosedCallback
+		CallbackReceiveData systemMessageReceiver
 	);
 	~SteamMessageProcessor();
 
@@ -34,7 +33,6 @@ public:
 private:
 	CallbackReceiveData messageReceiver;
 	CallbackReceiveData systemMessageReceiver;
-	CallbackConnectionClosed connectionClosedCallback;
 
 	bool running = false;
 	std::thread runMessageThread = {};

@@ -56,9 +56,6 @@ int client_start(CLARGS args) {
             mtxReady = true;
             cv.notify_one();
 		}
-	#ifdef _WIN32
-		, Config::AdapterGuid
-	#endif
 	);
 
     client.Start(args.lobbyId, args.lobbyPassword);
@@ -109,11 +106,7 @@ int server_start(CLARGS args) {
 	}
 
 	std::cout << "Starting server..." << std::endl;
-	#ifdef _WIN32
-	Server server(Config::AdapterGuid);
-	#else
 	Server server;
-	#endif
         
     server.Start(args.lobbyPassword);
 

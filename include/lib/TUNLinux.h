@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <thread>
 
-#include "TUN.h"
+#include "TUNCallback.h"
 
 class TUNLinux {
 public:

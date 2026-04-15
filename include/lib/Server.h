@@ -8,26 +8,12 @@
 #include <steam/steam_api_flat.h>
 
 #include "TUN.h"
-#ifdef _TUN_MOCK_ENABLED
-#include "TUNMock.h"
-#else
-#ifdef _WIN32
-#include "TUNWindows.h"
-#else
-#include "TUNLinux.h"
-#endif // _WIN32
-#endif // _TUN_MOCK_ENABLED
-
 #include "IpPool.h"
 #include "SteamMessageProcessor.h"
 
 class Server {
 public:
-#ifdef _WIN32
-	Server(GUID guid);
-#else
 	Server();
-#endif
 	~Server();
 
 	void Start(std::string password);
@@ -39,15 +25,7 @@ private:
 	IpPool ipPool;
 	SteamMessageProcessor steamMessageProcessor;
 
-#ifdef _TUN_MOCK_ENABLED
-	TUN<TUNMock> tunMessageProcessor;
-#else
-#ifdef _WIN32
-	TUN<TUNWindows> tunMessageProcessor;
-#else
-	TUN<TUNLinux> tunMessageProcessor;
-#endif // _WIN32
-#endif // _TUN_MOCK_ENABLED
+	TUN tunMessageProcessor;
 
 	void JoinMember(uint64 userId, uint32_t ip);
 	void LeftMember(uint64 userId);
