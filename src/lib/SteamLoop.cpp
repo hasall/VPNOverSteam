@@ -6,18 +6,18 @@
 #include "lib/SteamLoop.h"
 #include "lib/DebugLog.h"
 
-void SteamLoop::OnSteamServersConnectFailure(SteamServerConnectFailure_t* pParam) {
+void SteamLoop::OnSteamConnectFailure(SteamServerConnectFailure_t* pParam) {
 	DebugLog("OnSteamServersConnectFailure: %d\n", pParam->m_eResult);
 }
 
-void SteamLoop::OnSteamServersConnected(SteamServersConnected_t* pParam) {
+void SteamLoop::OnSteamConnected(SteamServersConnected_t* pParam) {
 	DebugLog("OnSteamServersConnected\n");
 	if (this->callback) {
 		this->callback();
 	}
 }
 
-void SteamLoop::OnSteamServersDisconnected(SteamServersDisconnected_t* pParam) {
+void SteamLoop::OnSteamDisconnected(SteamServersDisconnected_t* pParam) {
 	DebugLog("OnSteamServersDisconnected\n");
 }
 
@@ -25,25 +25,23 @@ SteamLoop::SteamLoop() : running(false) {
 }
 
 SteamLoop::~SteamLoop() {
-	this->StopServer();
-}
-void SteamLoop::RunLoop() {
-	this->running = true;
-	while (this->running) {
-		SteamAPI_RunCallbacks();
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
+	this->Stop();
 }
 
-void SteamLoop::RunServerLoop() {
-	this->running = true;
+void SteamLoop::RunLoop() {
 	while (this->running) {
 		SteamGameServer_RunCallbacks();
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 
-bool SteamLoop::StartServer(CallbackSteamConnected callback) {
+bool SteamLoop::Start(CallbackSteamConnected callback) {
+	if (!this->running) {
+		DebugLog("SteamLoop is already running\n");
+		return false;
+	}
+
+	this->running = true;
 	this->callback = callback;
 
 	bool result = SteamGameServer_Init(
@@ -57,16 +55,14 @@ bool SteamLoop::StartServer(CallbackSteamConnected callback) {
 		return false;
 	}
 
-    SteamGameServer()->LogOnAnonymous();
+	SteamGameServer()->LogOnAnonymous();
 
-	if (!this->running) {
-		this->runThread = std::thread(&SteamLoop::RunServerLoop, this);
-	}
+	this->runThread = std::thread(&SteamLoop::RunLoop, this);
 	return result;
 }
 
 
-bool SteamLoop::StopServer() {
+bool SteamLoop::Stop() {
 	this->running = false;
 	if (this->runThread.joinable()) {
 		this->runThread.join();

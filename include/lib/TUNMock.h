@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <functional>
+#include <atomic>
 
 #include "TUN.h"
 
@@ -20,7 +21,7 @@ public:
 
 	TUNMessageReceiver receiver;
 
-	bool running = false;
+	std::atomic<bool> running = false;
 	std::thread runLoop = {};
 
 	void Receiver(const char* message, size_t size);

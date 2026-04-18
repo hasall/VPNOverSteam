@@ -26,8 +26,12 @@ SteamMessageProcessor::~SteamMessageProcessor() {
 void SteamMessageProcessor::Start() {
     DebugLog("SteamMessageProcessor::Start\n");
     if (!this->running) {
+        this->running = true;
         this->runMessageThread = std::thread(&SteamMessageProcessor::ReceiveDataLoop, this, MessageChannel, this->messageReceiver);
         this->runSystemMessageThread = std::thread(&SteamMessageProcessor::ReceiveDataLoop, this, SystemMessageChannel, this->systemMessageReceiver);
+    }
+    else {
+        DebugLog("SteamMessageProcessor::Start: already running\n");
     }
 }
 
@@ -69,7 +73,6 @@ void SteamMessageProcessor::SendData(SteamNetworkingIdentity userId, const char*
 }
 
 void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData callback) {
-    this->running = true;
     while (this->running) {
         SteamNetworkingMessage_t* messages[10];
 

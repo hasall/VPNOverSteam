@@ -46,14 +46,20 @@ TUNWindows::TUNWindows(TUNMessageReceiver receiver, GUID guid) :
 }
 
 void TUNWindows::Start(uint32_t ip) {
-	DebugLog("Start: ip %s\n", Utils::ToString(ip).c_str());
+    if (!this->running) {
+        this->running = true;
+        DebugLog("TUNWindows::Start\n");
+	    DebugLog("Start: ip %s\n", Utils::ToString(ip).c_str());
 
-	this->SetupAdapter(ip);
-	this->SetupSession();
+        this->SetupAdapter(ip);
+        this->SetupSession();
     
-	// start receiver thread
-    if (!this->running)
+	    // start receiver thread
         this->receiverThread = std::thread(&TUNWindows::Receiver, this);
+    }
+    else {
+        DebugLog("TUNWindows::Start: already running\n");
+    }
 }
 
 void TUNWindows::Stop() {
@@ -76,7 +82,6 @@ void TUNWindows::SendData(const char* message, size_t size) {
 }
 
 void TUNWindows::Receiver() {
-	this->running = true;
     while (this->running) {
         try {
             DWORD PacketSize;

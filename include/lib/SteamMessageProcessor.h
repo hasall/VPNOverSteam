@@ -4,6 +4,7 @@
 #include <functional>
 #include <thread>
 #include <string>
+#include <atomic>
 #include <steam/steam_api_flat.h>
 
 #define MessageChannel 0
@@ -34,7 +35,7 @@ private:
 	CallbackReceiveData messageReceiver;
 	CallbackReceiveData systemMessageReceiver;
 
-	bool running = false;
+	std::atomic<bool> running = false;
 	std::thread runMessageThread = {};
 	std::thread runSystemMessageThread = {};
 

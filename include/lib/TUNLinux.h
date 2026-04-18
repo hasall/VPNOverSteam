@@ -4,6 +4,7 @@
 #include <functional>
 #include <cstdint>
 #include <thread>
+#include <atomic>
 
 #include "TUNCallback.h"
 
@@ -17,7 +18,7 @@ public:
 private:
     TUNMessageReceiver receiver;
 
-    bool running;
+    std::atomic<bool> running;
     std::thread receiverThread;
     void Receiver();
 

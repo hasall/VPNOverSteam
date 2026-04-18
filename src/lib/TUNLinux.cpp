@@ -19,9 +19,13 @@ TUNLinux::TUNLinux(TUNMessageReceiver receiver) : receiver(receiver) {
 }
 
 void TUNLinux::Start(uint32_t ip) {
-    this->SetupTun(ip);
     if (!this->running) {
+        this->running = true;
+        this->SetupTun(ip);
         this->receiverThread = std::thread(&TUNLinux::Receiver, this);
+    }
+    else {
+        DebugLog("TUNLinux::Start: already running\n");
     }
 }
 
@@ -40,8 +44,6 @@ void TUNLinux::SendData(const char* message, size_t size) {
 }
 
 void TUNLinux::Receiver() {
-    this->running = true;
-
     fd_set readfds;
     char buffer[1500];
 

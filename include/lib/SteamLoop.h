@@ -5,6 +5,7 @@
 #include <thread>
 #include <vector>
 #include <functional>
+#include <atomic>
 
 #include <steam/steam_api_flat.h>
 
@@ -16,21 +17,20 @@ public:
 	SteamLoop();
 	~SteamLoop();
 	
-	bool StartServer(CallbackSteamConnected callback);
-	bool StopServer();
+	bool Start(CallbackSteamConnected callback);
+	bool Stop();
 
 private:
-	bool running;
+	std::atomic<bool> running;
 	std::thread runThread;
 
 	CallbackSteamConnected callback;
 
 	void RunLoop();
-	void RunServerLoop();
 
-	STEAM_GAMESERVER_CALLBACK(SteamLoop, OnSteamServersConnectFailure, SteamServerConnectFailure_t);
-	STEAM_GAMESERVER_CALLBACK(SteamLoop, OnSteamServersConnected, SteamServersConnected_t);
-	STEAM_GAMESERVER_CALLBACK(SteamLoop, OnSteamServersDisconnected, SteamServersDisconnected_t);
+	STEAM_GAMESERVER_CALLBACK(SteamLoop, OnSteamConnectFailure, SteamServerConnectFailure_t);
+	STEAM_GAMESERVER_CALLBACK(SteamLoop, OnSteamConnected, SteamServersConnected_t);
+	STEAM_GAMESERVER_CALLBACK(SteamLoop, OnSteamDisconnected, SteamServersDisconnected_t);
 };
 
 #endif // STEAM_LOOP_H
