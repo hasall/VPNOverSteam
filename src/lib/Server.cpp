@@ -283,24 +283,34 @@ void Server::SendNotifyOfNewMemberMessage(SteamNetworkingIdentity user, uint64 u
 }
 
 void Server::PingLoop() {
+	std::vector<system_disconnected_member_message> listOfDisconnectedUsers;
+	
 	while (this->running) {
-		std::this_thread::sleep_for(std::chrono::seconds(60));
+		std::this_thread::sleep_for(std::chrono::minutes(2));
 
 		// remove if last ping time more than 5 min
 		auto now = std::chrono::system_clock::now();
+		if (listOfDisconnectedUsers.size() > 0) listOfDisconnectedUsers.clear();
 		this->usersList.erase(
 			std::remove_if(this->usersList.begin(), this->usersList.end(),
-				[now](const user_info& i) {
-					return i.lastPingTime < now - std::chrono::minutes(5);
+				[&now, &listOfDisconnectedUsers](const user_info& i) {
+					auto res = i.lastPingTime < now - std::chrono::minutes(5);
+					if (res) listOfDisconnectedUsers.push_back(MessageCreator::getDisconnectedMemberMessage(i.identity.GetSteamID().ConvertToUint64(), i.ip));
+					return res;
 				}),
 			this->usersList.end()
 		);
 
-		// send ping for all users
+		// send ping for all users and notify on disconnected users
 		for (const auto& userInfo : this->usersList) {
 			try {
-				system_ping_message message = MessageCreator::getPingMessage();
-				this->steamMessageProcessor.SendSystemMessage(userInfo.identity, (char*)&message, sizeof(message));
+				system_ping_message pingMessage = MessageCreator::getPingMessage();
+				this->steamMessageProcessor.SendSystemMessage(userInfo.identity, (char*)&pingMessage, sizeof(pingMessage));
+				if (listOfDisconnectedUsers.size() > 0) {
+					for (const auto& message: listOfDisconnectedUsers) {
+						this->steamMessageProcessor.SendSystemMessage(userInfo.identity, (char*)&message, sizeof(message));
+					}
+				}
 			}
 			catch (const std::exception& ex) {
 				DebugLog("Server::PingLoop: exception when sending ping to %llu: %s\n", userInfo.identity.GetSteamID().ConvertToUint64(), ex.what());
