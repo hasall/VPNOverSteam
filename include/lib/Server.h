@@ -4,12 +4,14 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <chrono>
 
 #include <steam/steam_api_flat.h>
 
 #include "TUN.h"
 #include "IpPool.h"
 #include "SteamMessageProcessor.h"
+#include "Constants.h"
 
 class Server {
 public:
@@ -21,11 +23,15 @@ public:
 
 private:
 	std::string password;
-	std::map<uint32_t, SteamNetworkingIdentity> ipToClient;
+	std::vector<user_info> usersList;
 	IpPool ipPool;
 	SteamMessageProcessor steamMessageProcessor;
 
 	TUN tunMessageProcessor;
+
+	std::atomic<bool> running = false;
+	std::thread pingThread = {};
+	void PingLoop();
 
 	void JoinMember(uint64 userId, uint32_t ip);
 	void LeftMember(uint64 userId);

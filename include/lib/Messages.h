@@ -39,10 +39,27 @@ struct system_error_message {
 };
 
 #pragma pack(1)
-struct system_new_member_message {
+struct system_connected_member_message {
 	uint8_t type = 4;
 	uint64 userId;
 	uint32_t ip;
+};
+
+#pragma pack(1)
+struct system_disconnected_member_message {
+	uint8_t type = 5;
+	uint64 userId;
+	uint32_t ip;
+};
+
+#pragma pack(1)
+struct system_ping_message {
+	uint8_t type = 6;
+};
+
+#pragma pack(1)
+struct system_pong_message {
+	uint8_t type = 7;
 };
 
 #define ERROR_CODE_WRONG_PASSWORD 1
@@ -66,8 +83,23 @@ public:
 		return message;
 	}
 
-	static system_new_member_message getNewMemberMessage(uint64 userId, uint32_t ip) {
-		system_new_member_message message = { 4, userId, ip };
+	static system_connected_member_message getConnectedMemberMessage(uint64 userId, uint32_t ip) {
+		system_connected_member_message message = { 4, userId, ip };
+		return message;
+	}
+
+	static system_disconnected_member_message getDisconnectedMemberMessage(uint64 userId, uint32_t ip) {
+		system_disconnected_member_message message = { 5, userId, ip };
+		return message;
+	}
+
+	static system_ping_message getPingMessage() {
+		system_ping_message message = { 6 };
+		return message;
+	}
+
+	static system_pong_message getPongMessage() {
+		system_pong_message message = { 7 };
 		return message;
 	}
 };

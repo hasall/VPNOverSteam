@@ -32,17 +32,17 @@ void Server::JoinMember(uint64 userId, uint32_t ip) {
 void Server::LeftMember(uint64 userId) {
     DebugLog("Server::LeftMember id: %llu\n", userId);
 	try {
-		auto it = std::find_if(this->ipToClient.begin(), this->ipToClient.end(),
-			[&userId](const std::pair<uint32_t, SteamNetworkingIdentity>& pair) {
-				return pair.second.GetSteamID() == userId;
+		auto it = std::find_if(this->usersList.begin(), this->usersList.end(),
+			[&userId](const user_info& i) {
+				return i.identity.GetSteamID().ConvertToUint64() == userId;
 			});
-		if (it == this->ipToClient.end()) {
+		if (it == this->usersList.end()) {
 			DebugLog("Server::LeftMember: userId %llu not found in map\n", userId);
 		} 
 		else {
-			SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), it->second);
-			this->ipPool.Release(it->first);
-			this->ipToClient.erase(it);
+			SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), it->identity);
+			this->ipPool.Release(it->ip);
+			this->usersList.erase(it);
 		}
 	}
 	catch (const std::exception& ex) {
@@ -54,9 +54,16 @@ void Server::LeftMember(uint64 userId) {
 }
 
 void Server::Start(std::string password) {
+	if (this->running) {
+		DebugLog("Server::Start: already running\n");
+		return;
+	}
 	this->password = Utils::SHA512(password);
 	this->steamMessageProcessor.Start();
 	this->tunMessageProcessor.Start(Utils::FromString(Config::ServerIp));
+
+	this->running = true;
+	this->pingThread = std::thread(&Server::PingLoop, this);
 }
 
 void Server::Stop() {
@@ -75,14 +82,17 @@ void Server::TUNDataReceiver(const char* message, size_t size) {
 		return;
 	}
 	auto ipHeader = reinterpret_cast<const ip_header*>(message);
-	auto it = this->ipToClient.find(ipHeader->dest_ip);
-	if (it == this->ipToClient.end()) {
+	auto it = std::find_if(this->usersList.begin(), this->usersList.end(), 
+		[&ipHeader](const user_info& i) {
+			return i.ip == ipHeader->dest_ip;
+		});
+	if (it == this->usersList.end()) {
 		DebugLog("Server::TUNDataReceiver: no mapping found for destination ip %s\n", Utils::ToString(ipHeader->dest_ip).c_str());
 		return;
 	}
 
 	try {
-		this->steamMessageProcessor.SendMessage(it->second, message, size);
+		this->steamMessageProcessor.SendMessage(it->identity, message, size);
 	}
 	catch (const std::exception& ex) {
 		DebugLog("Server::TUNDataReceiver: exception when sending steam message: %s\n", ex.what());
@@ -104,11 +114,11 @@ void Server::SteamMessageReceiver(CSteamID userId, const char* message, size_t s
 	}
 	try {
 		// check if user is in map
-		auto it = std::find_if(this->ipToClient.begin(), this->ipToClient.end(),
-			[&userId](const std::pair<uint32_t, SteamNetworkingIdentity>& pair) {
-				return pair.second.GetSteamID() == userId;
+		auto it = std::find_if(this->usersList.begin(), this->usersList.end(),
+			[&userId](const user_info& i) {
+				return i.identity.GetSteamID() == userId;
 			});
-		if (it == this->ipToClient.end()) {
+		if (it == this->usersList.end()) {
 			DebugLog("Server::SteamMessageReceiver: warning: userId %llu not found in map\n", userId.ConvertToUint64());
 			return;
 		}
@@ -155,12 +165,12 @@ void Server::SteamSystemMessageReceiver(CSteamID userId, const char* message, si
 				DebugLog("Server::SteamSystemMessageReceiver: send ip: %u, %s\n", ip, Utils::ToString(ip).c_str());
 
 				this->SendHandshakeMassage(user, ip);
-				for (const auto& pair : this->ipToClient) {
-					this->SendNotifyOfNewMemberMessage(pair.second, userId.ConvertToUint64(), ip);
+				for (const auto& i : this->usersList) {
+					this->SendNotifyOfNewMemberMessage(i.identity, userId.ConvertToUint64(), ip);
 				}
 				this->JoinMember(userId.ConvertToUint64(), ip);
 
-				this->ipToClient.insert({ ip, user });
+				this->usersList.push_back({ user, ip });
 				return;
 			}
 			DebugLog("Server::SteamSystemMessageReceiver: Incorrect password\n");
@@ -183,6 +193,45 @@ void Server::SteamSystemMessageReceiver(CSteamID userId, const char* message, si
 	}
 	if (type == 4) { // unexpected new member message
 		DebugLog("Server::SteamSystemMessageReceiver: unexpected generic message from %llu\n", userId.ConvertToUint64());
+		return;
+	}
+	if (type == 5) { // unexpected disconnected member message
+		DebugLog("Server::SteamSystemMessageReceiver: unexpected disconnected member message from %llu\n", userId.ConvertToUint64());
+		return;
+	}
+	if (type == 6) { // ping message
+		DebugLog("Server::SteamSystemMessageReceiver: ping message from %llu\n", userId.ConvertToUint64());
+		try {
+			auto user = SteamNetworkingIdentity();
+			user.SetSteamID(userId);
+			system_pong_message message = MessageCreator::getPongMessage();
+			this->steamMessageProcessor.SendSystemMessage(user, (char*)&message, sizeof(message));
+
+			auto userInfo = std::find_if(this->usersList.begin(), this->usersList.end(),
+				[&userId](const user_info& info) {
+					return info.identity.GetSteamID() == userId;
+				});
+			if (userInfo != this->usersList.end()) {
+				userInfo->lastPingTime = std::chrono::system_clock::now();
+			}
+		}
+		catch (const std::exception& ex) {
+			DebugLog("Server::SteamSystemMessageReceiver: exception handling ping message: %s\n", ex.what());
+		}
+		catch (...) {
+			DebugLog("Server::SteamSystemMessageReceiver: unknown exception handling ping message\n");
+		}
+		return;
+	}
+	if (type == 7) { // pong message
+		DebugLog("Server::SteamSystemMessageReceiver: pong message from %llu\n", userId.ConvertToUint64());
+		auto userInfo = std::find_if(this->usersList.begin(), this->usersList.end(),
+			[&userId](const user_info& info) {
+				return info.identity.GetSteamID() == userId;
+			});
+		if (userInfo != this->usersList.end()) {
+			userInfo->lastPingTime = std::chrono::system_clock::now();
+		}
 		return;
 	}
 	DebugLog("Server::SteamSystemMessageReceiver: unexpected system message\n");
@@ -221,7 +270,7 @@ void Server::SendErrorMassage(SteamNetworkingIdentity user, uint32_t errorCode) 
 void Server::SendNotifyOfNewMemberMessage(SteamNetworkingIdentity user, uint64 userID, uint32_t ip) {
 	DebugLog("Server::SendNotifyOfNewMemberMessage: sending new member message to %llu, userId: %llu, ip: %u, %s\n", user.GetSteamID().ConvertToUint64(), userID, ip, Utils::ToString(ip).c_str());
 	try {
-		system_new_member_message message = MessageCreator::getNewMemberMessage(userID, ip);
+		system_connected_member_message message = MessageCreator::getConnectedMemberMessage(userID, ip);
 		Utils::PrintBytes((char*)&message, sizeof(message));
 		this->steamMessageProcessor.SendSystemMessage(user, (char*)&message, sizeof(message));
 	}
@@ -231,4 +280,35 @@ void Server::SendNotifyOfNewMemberMessage(SteamNetworkingIdentity user, uint64 u
 	catch (...) {
 		DebugLog("Server::SendNewMemberMessage: unknown exception\n");
 	}
+}
+
+void Server::PingLoop() {
+	while (this->running) {
+		std::this_thread::sleep_for(std::chrono::seconds(60));
+
+		// remove if last ping time more than 5 min
+		auto now = std::chrono::system_clock::now();
+		this->usersList.erase(
+			std::remove_if(this->usersList.begin(), this->usersList.end(),
+				[now](const user_info& i) {
+					return i.lastPingTime < now - std::chrono::minutes(5);
+				}),
+			this->usersList.end()
+		);
+
+		// send ping for all users
+		for (const auto& userInfo : this->usersList) {
+			try {
+				system_ping_message message = MessageCreator::getPingMessage();
+				this->steamMessageProcessor.SendSystemMessage(userInfo.identity, (char*)&message, sizeof(message));
+			}
+			catch (const std::exception& ex) {
+				DebugLog("Server::PingLoop: exception when sending ping to %llu: %s\n", userInfo.identity.GetSteamID().ConvertToUint64(), ex.what());
+			}
+			catch (...) {
+				DebugLog("Server::PingLoop: unknown exception when sending ping to %llu\n", userInfo.identity.GetSteamID().ConvertToUint64());
+			}
+		}
+	}
+	DebugLog("Server::PingLoop stopped\n");
 }

@@ -30,7 +30,7 @@ int client_start(CLARGS args) {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	if (!steamLoop.StartServer([&mtxReady, &cv]() {
+	if (!steamLoop.Start([&mtxReady, &cv]() {
 		DebugLog("SteamLoop started\n");
 
 		uint64_steamid steamId = SteamAPI_ISteamGameServer_GetSteamID(SteamAPI_SteamGameServer());
@@ -71,7 +71,7 @@ int client_start(CLARGS args) {
 
     std::cout << "Quitting..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(10)); // wait for steam messages processing
-	steamLoop.StopServer();
+	steamLoop.Stop();
 	client.Stop();
 
     return 0;
@@ -86,7 +86,7 @@ int server_start(CLARGS args) {
 
 	std::cout << "Initializing..." << std::endl;
 	SteamLoop steamLoop;
-	if (!steamLoop.StartServer([&mtxReady, &cv]() {
+	if (!steamLoop.Start([&mtxReady, &cv]() {
 		DebugLog("SteamLoop started\n");
 
 		uint64_steamid steamId = SteamAPI_ISteamGameServer_GetSteamID(SteamAPI_SteamGameServer());
@@ -116,7 +116,7 @@ int server_start(CLARGS args) {
 
     std::cout << "Quitting..." << std::endl;
 
-	steamLoop.StopServer();
+	steamLoop.Stop();
 	server.Stop();
 
     return 0;

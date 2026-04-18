@@ -34,11 +34,15 @@ void Client::JoinMember(uint64 userId, uint32_t ip) {
 	
 	auto user = SteamNetworkingIdentity();
 	user.SetSteamID(CSteamID(userId));
-	auto res = this->ipToClient.insert({ ip, user });
-	if (!res.second) {
+	auto res = std::find_if(this->usersList.begin(), this->usersList.end(),
+		[&userId](const user_info& it) {
+			return it.identity.GetSteamID().ConvertToUint64() == userId;
+		});
+	if (res != this->usersList.end()) {
 		DebugLog("Client::JoinMember: ip %s already present in map, replacing entry\n", Utils::ToString(ip).c_str());
 		return;
 	}
+	this->usersList.push_back({ user, ip });
 
 	if (Utils::ToString(ip).compare(Config::ServerIp) == 0) {
 		this->SendPasswordMassage(user);
@@ -47,15 +51,16 @@ void Client::JoinMember(uint64 userId, uint32_t ip) {
 
 void Client::LeftMember(uint64 userId) {
     DebugLog("Client::LeftMember id: %llu\n", userId);
-	auto it = std::find_if(this->ipToClient.begin(), this->ipToClient.end(),
-		[&userId](const std::pair<uint32_t, SteamNetworkingIdentity>& pair) {
-			return pair.second.GetSteamID() == userId;
+	auto it = std::find_if(this->usersList.begin(), this->usersList.end(),
+		[&userId](const user_info& pair) {
+			return pair.identity.GetSteamID().ConvertToUint64() == userId;
 		});
-	if (it == this->ipToClient.end()) {
+	if (it == this->usersList.end()) {
 		DebugLog("Client::LeftMember: userId %llu not found in map\n", userId);
-	} else {
-		SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), it->second);
-		this->ipToClient.erase(it);
+	} 
+	else {
+		SteamAPI_ISteamNetworkingMessages_CloseSessionWithUser(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), it->identity);
+		this->usersList.erase(it);
 	}
 }
 
@@ -82,8 +87,11 @@ void Client::TUNDataReceiver(const char* message, size_t size) {
 		return;
 	}
 	auto ipHeader = reinterpret_cast<const ip_header*>(message);
-	auto it = this->ipToClient.find(ipHeader->dest_ip);
-	if (it == this->ipToClient.end()) {
+	auto it = std::find_if(this->usersList.begin(), this->usersList.end(),
+		[&ipHeader](const user_info& it) {
+			return it.ip == ipHeader->dest_ip;
+		});
+	if (it == this->usersList.end()) {
 		DebugLog("Client::TUNDataReceiver: no mapping found for destination ip %s\n", Utils::ToString(ipHeader->dest_ip).c_str());
 		return;
 	}
@@ -95,7 +103,7 @@ void Client::TUNDataReceiver(const char* message, size_t size) {
 	}
 
 	try {
-		this->steamMessageProcessor.SendMessage(it->second, message, size);
+		this->steamMessageProcessor.SendMessage(it->identity, message, size);
 	}
 	catch (const std::exception& ex) {
 		DebugLog("Client::TUNDataReceiver: exception when sending steam message: %s\n", ex.what());
@@ -118,11 +126,11 @@ void Client::SteamMessageReceiver(CSteamID userId, const char* message, size_t s
 
 	try {
 		// check if user is in map
-		auto it = std::find_if(this->ipToClient.begin(), this->ipToClient.end(),
-			[&userId](const std::pair<uint32_t, SteamNetworkingIdentity>& pair) {
-				return pair.second.GetSteamID() == userId;
+		auto it = std::find_if(this->usersList.begin(), this->usersList.end(),
+			[&userId](const user_info& i) {
+				return i.identity.GetSteamID() == userId;
 			});
-		if (it == this->ipToClient.end()) {
+		if (it == this->usersList.end()) {
 			DebugLog("Server::SteamMessageReceiver: warning: userId %llu not found in map\n", userId.ConvertToUint64());
 			return;
 		}
@@ -181,10 +189,16 @@ void Client::SteamSystemMessageReceiver(CSteamID userId, const char* message, si
 		DebugLog("Client::SteamSystemMessageReceiver: system error message from %llu\n", userId.ConvertToUint64());
 		return;
 	}
-	if (type == 4) { // new member message
-		system_new_member_message* newMemberMessage = (system_new_member_message*)message;
-		DebugLog("Client::SteamSystemMessageReceiver: new member message, userId: %llu\n", newMemberMessage->userId);
+	if (type == 4) { // connected member message
+		system_connected_member_message* newMemberMessage = (system_connected_member_message*)message;
+		DebugLog("Client::SteamSystemMessageReceiver: connected member message, userId: %llu\n", newMemberMessage->userId);
 		this->JoinMember(newMemberMessage->userId, newMemberMessage->ip);
+		return;
+	}
+	if (type == 5) { // disconnected member message
+		system_disconnected_member_message* disconnectedMemberMessage = (system_disconnected_member_message*)message;
+		DebugLog("Client::SteamSystemMessageReceiver: disconnected member message, userId: %llu\n", disconnectedMemberMessage->userId);
+		this->LeftMember(disconnectedMemberMessage->userId);
 		return;
 	}
 	DebugLog("Client::SteamSystemMessageReceiver: unexpected system message type %u from %llu (size=%zu)\n", type, userId.ConvertToUint64(), size);

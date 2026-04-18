@@ -13,6 +13,7 @@
 #include "TUN.h"
 #include "IpPool.h"
 #include "SteamMessageProcessor.h"
+#include "Constants.h"
 
 #define ReceiveNewIpCallback std::function<void(uint32_t ip)>
 
@@ -26,7 +27,7 @@ public:
 
 private:
 	std::string password;
-	std::map<uint32_t, SteamNetworkingIdentity> ipToClient;
+	std::vector<user_info> usersList;
 	SteamMessageProcessor steamMessageProcessor;
 
 	// Block all messages from TUN before handshake
