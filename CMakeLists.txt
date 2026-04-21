@@ -71,6 +71,38 @@ if(WIN32)
             ${STEAM_ROOT}/lib/win64/steam_api64.dll
             $<TARGET_FILE_DIR:VPNOverSteamLib>
     )
+    
+    # Copy SteamCMD DLL to output directory so runtime finds it
+    add_custom_command(TARGET VPNOverSteamApp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/steamcmd_bin/crashhandler64.dll
+            $<TARGET_FILE_DIR:VPNOverSteamApp>
+    )
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/steamcmd_bin/steam.dll
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/steamcmd_bin/steamclient64.dll
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/steamcmd_bin/steamconsole64.dll
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/steamcmd_bin/tier0_s64.dll
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${STEAM_ROOT}/steamcmd_bin/vstdlib_s64.dll
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
 
     # Link Wintun (assuming it's located in "third_party/wintun")
     set(WINTUN_ROOT ${CMAKE_SOURCE_DIR}/third_party/wintun)
@@ -85,6 +117,41 @@ if(WIN32)
     add_custom_command(TARGET VPNOverSteamLib POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${WINTUN_ROOT}/bin/win64/wintun.dll
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
+    # Copy MinGW runtime DLLs
+    get_filename_component(MINGW_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+
+    add_custom_command(TARGET VPNOverSteamApp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MINGW_BIN_DIR}/libstdc++-6.dll"
+            "${MINGW_BIN_DIR}/libgcc_s_seh-1.dll"
+            "${MINGW_BIN_DIR}/libwinpthread-1.dll"
+            $<TARGET_FILE_DIR:VPNOverSteamApp>
+    )
+
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MINGW_BIN_DIR}/libstdc++-6.dll"
+            "${MINGW_BIN_DIR}/libgcc_s_seh-1.dll"
+            "${MINGW_BIN_DIR}/libwinpthread-1.dll"
+            $<TARGET_FILE_DIR:VPNOverSteamLib>
+    )
+
+    # Copy OpenSSL DLLs
+    get_filename_component(MINGW_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+
+    add_custom_command(TARGET VPNOverSteamApp POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MINGW_BIN_DIR}/libcrypto-3-x64.dll"
+            "${MINGW_BIN_DIR}/libssl-3-x64.dll"
+            $<TARGET_FILE_DIR:VPNOverSteamApp>
+    )
+
+    add_custom_command(TARGET VPNOverSteamLib POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MINGW_BIN_DIR}/libcrypto-3-x64.dll"
+            "${MINGW_BIN_DIR}/libssl-3-x64.dll"
             $<TARGET_FILE_DIR:VPNOverSteamLib>
     )
 elseif(UNIX)
