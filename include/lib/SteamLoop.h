@@ -21,7 +21,7 @@ public:
 	bool Stop();
 
 private:
-	std::atomic<bool> running;
+	std::atomic<bool> running = false;
 	std::thread runThread;
 
 	CallbackSteamConnected callback;

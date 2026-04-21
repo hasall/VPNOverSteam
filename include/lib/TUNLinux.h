@@ -18,7 +18,7 @@ public:
 private:
     TUNMessageReceiver receiver;
 
-    std::atomic<bool> running;
+    std::atomic<bool> running = false;
     std::thread receiverThread;
     void Receiver();
 

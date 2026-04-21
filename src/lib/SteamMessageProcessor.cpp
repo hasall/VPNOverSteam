@@ -14,7 +14,8 @@ SteamMessageProcessor::SteamMessageProcessor(
     CallbackReceiveData systemMessageReceiver
 ): 
     messageReceiver(messageReceiver),
-    systemMessageReceiver(systemMessageReceiver)
+    systemMessageReceiver(systemMessageReceiver),
+    running(false)
 {
     DebugLog("SteamMessageProcessor::SteamMessageProcessor\n");
 }
@@ -25,7 +26,7 @@ SteamMessageProcessor::~SteamMessageProcessor() {
 
 void SteamMessageProcessor::Start() {
     DebugLog("SteamMessageProcessor::Start\n");
-    if (!this->running) {
+    if (this->running == false) {
         this->running = true;
         this->runMessageThread = std::thread(&SteamMessageProcessor::ReceiveDataLoop, this, MessageChannel, this->messageReceiver);
         this->runSystemMessageThread = std::thread(&SteamMessageProcessor::ReceiveDataLoop, this, SystemMessageChannel, this->systemMessageReceiver);
@@ -73,7 +74,7 @@ void SteamMessageProcessor::SendData(SteamNetworkingIdentity userId, const char*
 }
 
 void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData callback) {
-    while (this->running) {
+    while (this->running == true) {
         SteamNetworkingMessage_t* messages[10];
 
         int num = SteamAPI_ISteamNetworkingMessages_ReceiveMessagesOnChannel(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), channel, messages, 10);

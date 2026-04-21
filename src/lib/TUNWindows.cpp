@@ -36,7 +36,8 @@ TUNWindows::TUNWindows(TUNMessageReceiver receiver, GUID guid) :
     receiver(receiver),
 	Adapter(NULL),
 	Session(NULL),
-    Guid(guid) {
+    Guid(guid),
+    running(false) {
 	DebugLog("TUNWindows selected\n");
 	this->Wintun = TUNWindows::InitializeWintun();
     if (!this->Wintun) {
@@ -46,7 +47,7 @@ TUNWindows::TUNWindows(TUNMessageReceiver receiver, GUID guid) :
 }
 
 void TUNWindows::Start(uint32_t ip) {
-    if (!this->running) {
+    if (this->running == false) {
         this->running = true;
         DebugLog("TUNWindows::Start\n");
 	    DebugLog("Start: ip %s\n", Utils::ToString(ip).c_str());
@@ -82,7 +83,7 @@ void TUNWindows::SendData(const char* message, size_t size) {
 }
 
 void TUNWindows::Receiver() {
-    while (this->running) {
+    while (this->running == true) {
         try {
             DWORD PacketSize;
             BYTE* Packet = WintunReceivePacket(Session, &PacketSize);

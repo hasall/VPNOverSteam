@@ -13,13 +13,13 @@
 #include "lib/Utils.h"
 #include "lib/Config.h"
 
-TUNLinux::TUNLinux(TUNMessageReceiver receiver) : receiver(receiver) {
+TUNLinux::TUNLinux(TUNMessageReceiver receiver) : receiver(receiver), running(false) {
 	DebugLog("TUNLinux selected\n");
     this->tunFd = this->InitializeTun();
 }
 
 void TUNLinux::Start(uint32_t ip) {
-    if (!this->running) {
+    if (this->running == false) {
         this->running = true;
         this->SetupTun(ip);
         this->receiverThread = std::thread(&TUNLinux::Receiver, this);
@@ -47,7 +47,7 @@ void TUNLinux::Receiver() {
     fd_set readfds;
     char buffer[1500];
 
-    while (this->running) {
+    while (this->running == true) {
         FD_ZERO(&readfds);
         FD_SET(this->tunFd, &readfds);
 

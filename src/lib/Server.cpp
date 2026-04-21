@@ -18,7 +18,8 @@ Server::Server() :
 	steamMessageProcessor(
 		std::bind(&Server::SteamMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
 		std::bind(&Server::SteamSystemMessageReceiver, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-	)
+	),
+	running(false)
 {}
 
 Server::~Server() {
@@ -54,7 +55,7 @@ void Server::LeftMember(uint64 userId) {
 }
 
 void Server::Start(std::string password) {
-	if (this->running) {
+	if (this->running == true) {
 		DebugLog("Server::Start: already running\n");
 		return;
 	}
@@ -285,7 +286,7 @@ void Server::SendNotifyOfNewMemberMessage(SteamNetworkingIdentity user, uint64 u
 void Server::PingLoop() {
 	std::vector<system_disconnected_member_message> listOfDisconnectedUsers;
 	
-	while (this->running) {
+	while (this->running == true) {
 		std::this_thread::sleep_for(std::chrono::minutes(2));
 
 		// remove if last ping time more than 5 min

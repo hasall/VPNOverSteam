@@ -29,14 +29,14 @@ SteamLoop::~SteamLoop() {
 }
 
 void SteamLoop::RunLoop() {
-	while (this->running) {
+	while (this->running == true) {
 		SteamGameServer_RunCallbacks();
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 }
 
 bool SteamLoop::Start(CallbackSteamConnected callback) {
-	if (!this->running) {
+	if (this->running == true) {
 		DebugLog("SteamLoop is already running\n");
 		return false;
 	}
