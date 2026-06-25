@@ -19,6 +19,7 @@ add_library(VPNOverSteamLib SHARED
     src/lib/TUNMock.cpp
     src/lib/TUNWindows.cpp
     src/lib/Utils.cpp
+    src/lib/Encryption.cpp
     )
 
 target_compile_definitions(VPNOverSteamLib PRIVATE VPN_OVER_STEAM_EXPORTS)

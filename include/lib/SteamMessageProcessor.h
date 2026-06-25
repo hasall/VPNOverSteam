@@ -7,6 +7,8 @@
 #include <atomic>
 #include <steam/steam_api_flat.h>
 
+#include "Encryption.h"
+
 #define MessageChannel 0
 #define SystemMessageChannel 1
 #define CallbackReceiveData std::function<void(CSteamID userId, const char* message, size_t size)>
@@ -30,8 +32,11 @@ public:
 
 	void SendMessage(SteamNetworkingIdentity userId, const char* data, size_t size);
 	void SendSystemMessage(SteamNetworkingIdentity userId, const char* data, size_t size);
+	void SetEncryptionKey(const std::string& passwordHash);
 
 private:
+	Encryption encryption;
+
 	CallbackReceiveData messageReceiver;
 	CallbackReceiveData systemMessageReceiver;
 

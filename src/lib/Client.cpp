@@ -66,6 +66,7 @@ void Client::LeftMember(uint64 userId) {
 
 void Client::Start(uint64 serverUserId, std::string password) {
 	this->password = Utils::SHA512(password);
+	this->steamMessageProcessor.SetEncryptionKey(this->password);
 	this->steamMessageProcessor.Start();
 
 	this->JoinMember(serverUserId, Utils::FromString(Config::ServerIp));

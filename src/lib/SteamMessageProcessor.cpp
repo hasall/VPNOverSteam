@@ -1,6 +1,8 @@
 #include "lib/SteamMessageProcessor.h"
 #include "lib/DebugLog.h"
 
+#include <vector>
+
 void SteamMessageProcessor::OnConnectionRequested(SteamNetworkingMessagesSessionRequest_t* request) {
     DebugLog("AcceptSession\n");
     SteamAPI_ISteamNetworkingMessages_AcceptSessionWithUser(SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(), request->m_identityRemote);
@@ -22,6 +24,10 @@ SteamMessageProcessor::SteamMessageProcessor(
 
 SteamMessageProcessor::~SteamMessageProcessor() {
     this->Stop();
+}
+
+void SteamMessageProcessor::SetEncryptionKey(const std::string& passwordHash) {
+    this->encryption.SetKey(passwordHash);
 }
 
 void SteamMessageProcessor::Start() {
@@ -59,11 +65,12 @@ void SteamMessageProcessor::SendSystemMessage(SteamNetworkingIdentity userId, co
 void SteamMessageProcessor::SendData(SteamNetworkingIdentity userId, const char* data, size_t size, int channel) {
     DebugLog("SteamMessageProcessor::SendData\n");
     DebugLogArr(data, size);
+    std::vector<uint8_t> encrypted = this->encryption.Encrypt(data, size);
     EResult res = SteamAPI_ISteamNetworkingMessages_SendMessageToUser(
         SteamAPI_SteamGameServerNetworkingMessages_SteamAPI(),
         userId,
-        data,
-        (uint32)size,
+        encrypted.data(),
+        static_cast<uint32>(encrypted.size()),
         k_nSteamNetworkingSend_Reliable,
         channel
     );
@@ -94,7 +101,8 @@ void SteamMessageProcessor::ReceiveDataLoop(int channel, CallbackReceiveData cal
                 } else {
                     DebugLogArr(((uint8_t*)msg->m_pData), msg->m_cbSize);
                     if (callback) {
-                        callback(msg->m_identityPeer.GetSteamID(), (char*)msg->m_pData, msg->m_cbSize);
+                        std::vector<uint8_t> decrypted = this->encryption.Decrypt((char*) msg->m_pData, msg->m_cbSize);
+                        callback(msg->m_identityPeer.GetSteamID(), reinterpret_cast<const char*>(decrypted.data()), decrypted.size());
                     }
                 }
             }

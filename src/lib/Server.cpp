@@ -60,6 +60,7 @@ void Server::Start(std::string password) {
 		return;
 	}
 	this->password = Utils::SHA512(password);
+	this->steamMessageProcessor.SetEncryptionKey(this->password);
 	this->steamMessageProcessor.Start();
 	this->tunMessageProcessor.Start(Utils::FromString(Config::ServerIp));
 
