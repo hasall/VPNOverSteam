@@ -28,13 +28,15 @@ VPN over Steam uses the Steam Networking transport layer to establish connection
 - NAT traversal is handled automatically  
 - Reliable packet delivery is ensured  
 
-All of this works **independently of the official Steam client**.
+All of this works **independently of the Steam client**.
+
+![Image](drawio.png)
 
 ---
 
 ## 📦 Dependencies
 
-This project uses Steam networking libraries extracted from **steamcmd**.
+This project uses Steam networking libraries from **steamcmd**.
 
 No Steam client installation is required.
 
@@ -66,7 +68,7 @@ cmake --build .
 2. Connect clients:
    - "-c",
    - "-li",
-   - "90284098090738699", // id from LogOnAnonymous: 90284098090738699
+   - "90284098090738699", // room id from server example: LogOnAnonymous: 90284098090738699
    - "-lp",
    - "MyPassword"
 
